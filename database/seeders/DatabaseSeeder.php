@@ -10,13 +10,17 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run(): void
+    public function run()
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        $this->call([
+            ProgramSeeder::class,
+            ModuleSeeder::class,
+            RoomSeeder::class,
+            GroupSeeder::class,   // ✅ Run GroupSeeder before UserSeeder
+            UserSeeder::class,    // ✅ Now $group won't be null
+            ModuleTeacherSeeder::class,
+        ]);
     }
+    
+    
 }

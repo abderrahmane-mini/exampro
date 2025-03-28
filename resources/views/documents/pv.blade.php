@@ -16,9 +16,9 @@
     <h1>Procès-Verbal de Notes</h1>
 
     <div class="meta">
-        <p><strong>Module :</strong> {{ $module->name }}</p>
-        <p><strong>Groupe :</strong> {{ $group->name }}</p>
-        <p><strong>Date de l'examen :</strong> {{ $exam->date }} à {{ $exam->time }}</p>
+        <p><strong>Module :</strong> {{ $exam->module->name ?? '-' }}</p>
+        <p><strong>Groupe :</strong> {{ $exam->group->name ?? '-' }}</p>
+        <p><strong>Date de l'examen :</strong> {{ \Carbon\Carbon::parse($exam->start_time)->format('d/m/Y H:i') }}</p>
     </div>
 
     <table>
@@ -29,11 +29,11 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($grades as $grade)
-            <tr>
-                <td>{{ $grade->student->name }}</td>
-                <td>{{ $grade->grade }}/20</td>
-            </tr>
+            @foreach($exam->results as $result)
+                <tr>
+                    <td>{{ $result->student->name ?? '-' }}</td>
+                    <td>{{ $result->grade ?? '-' }}/20</td>
+                </tr>
             @endforeach
         </tbody>
     </table>

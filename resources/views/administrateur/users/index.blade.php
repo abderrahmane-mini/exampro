@@ -25,7 +25,7 @@
                     <td class="p-2">{{ $user->email }}</td>
                     <td class="p-2 capitalize">{{ $user->user_type }}</td>
                     <td class="p-2">
-                        <a href="#" class="text-blue-500">Modifier</a> |
+                        <a href="{{ route('users.edit', $user->id) }}" class="text-blue-500 hover:underline">Modifier</a>
                         <a href="#" class="text-red-500">Supprimer</a>
                     </td>
                 </tr>

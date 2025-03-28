@@ -40,59 +40,80 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// 📝 Grades (Teacher + Director)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/grades/select', [GradeController::class, 'selectExam'])->name('grades.select');
-    Route::get('/grades/enter/{exam}', [GradeController::class, 'enter'])->name('grades.enter');
-    Route::post('/grades/enter/{exam}', [GradeController::class, 'store'])->name('grades.store');
-    Route::get('/grades/view', [GradeController::class, 'view'])->name('grades.view');
-    Route::get('/grades/averages', [GradeController::class, 'averages'])->name('grades.averages');
+// 📝 Grades (Directeur Pédagogique only)
+Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
+    Route::get('/grades/averages', [GradeController::class, 'calculateAverages'])->name('grades.averages');
 });
 
-// 📄 Documents (Student / Director)
+// 📄 Documents (Accessible by teachers and directors)
 Route::middleware(['auth'])->group(function () {
-    // Add the missing documents.index route
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
     Route::get('/documents/releve/{student}', [DocumentController::class, 'releve'])->name('documents.releve');
     Route::get('/documents/attestation/{student}', [DocumentController::class, 'attestation'])->name('documents.attestation');
     Route::get('/documents/pv/{exam}', [DocumentController::class, 'pv'])->name('documents.pv');
 });
 
-// 🎓 Directeur Pédagogique routes
+// 🎓 Directeur Pédagogique Routes
 Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
-    Route::resource('programs', ProgramController::class)->except(['show']);
-    Route::resource('groups', GroupController::class)->except(['show']);
-    Route::get('/groups/{group}/assign', [GroupController::class, 'assign'])->name('groups.assign');
-    Route::post('/groups/{group}/assign', [GroupController::class, 'storeAssignment'])->name('groups.assign.store');
-    
-    Route::resource('students', StudentController::class)->except(['show']);
-    Route::resource('teachers', TeacherController::class)->except(['show']);
-    Route::resource('modules', ModuleController::class)->except(['show']);
-    Route::resource('rooms', RoomController::class)->except(['show']);
-    Route::get('/rooms/{room}/exams', [RoomController::class, 'exams'])->name('rooms.exams');
+    Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
+    Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+    Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
+    Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
+    Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
 
-    Route::resource('exams', ExamController::class)->except(['show']);
     Route::get('/exams/planning/view', [ExamController::class, 'planning'])->name('exams.planning');
     Route::get('/exams/results', [ExamController::class, 'results'])->name('exams.results');
 });
 
-// 👨‍🏫 Enseignant
+
+// 👨‍🏫 Enseignant Routes
 Route::middleware(['auth', 'role:enseignant'])->group(function () {
     Route::get('/enseignant/dashboard', [EnseignantController::class, 'dashboard'])->name('enseignant.dashboard');
+    Route::get('/enseignant/exams/schedule', [ExamController::class, 'schedule'])->name('enseignant.exams.schedule');
+
+    // Module details
+    Route::get('/enseignant/modules/{module}', [ModuleController::class, 'show'])->name('modules.details');
+
+    // Grades management
+    Route::get('/enseignant/grades/select', [GradeController::class, 'selectExam'])->name('enseignant.grades.select');
+    Route::get('/enseignant/grades/enter/{exam}', [GradeController::class, 'enter'])->name('enseignant.grades.enter');
+    Route::post('/enseignant/grades/enter/{exam}', [GradeController::class, 'store'])->name('enseignant.grades.store');
+    Route::get('/enseignant/grades/view', [GradeController::class, 'view'])->name('enseignant.grades.view');
+    
 });
 
-// 🎓 Étudiant
+
+// 🎓 Étudiant Routes
 Route::middleware(['auth', 'role:etudiant'])->group(function () {
     Route::get('/etudiant/dashboard', [EtudiantController::class, 'dashboard'])->name('etudiant.dashboard');
+
+    // ✅ Add this line to support exam schedule viewing
+    Route::get('/etudiant/exams/schedule', [EtudiantController::class, 'examSchedule'])->name('etudiant.exams.schedule');
+
+    Route::get('/etudiant/grades/view', [EtudiantController::class, 'viewGrades'])->name('etudiant.grades.view');
+    Route::get('/documents/releve/{student}', [DocumentController::class, 'releve'])->name('documents.releve');
+
+    Route::get('/etudiant/releve/download', [EtudiantController::class, 'downloadReleve'])->name('etudiant.releve.download');
 });
 
-// 👤 Administrateur
+
+// 👤 Administrateur Routes
 Route::middleware(['auth', 'role:administrateur'])->group(function () {
     Route::get('/admin/dashboard', [AdministrateurController::class, 'dashboard'])->name('admin.dashboard');
+
     Route::get('/users/create', [AdministrateurController::class, 'create'])->name('users.create');
+    Route::post('/users/store', [AdministrateurController::class, 'store'])->name('users.store');
+
     Route::get('/users/manage', [AdministrateurController::class, 'manage'])->name('users.manage');
+
+    Route::get('/users/{user}/edit', [AdministrateurController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [AdministrateurController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [AdministrateurController::class, 'destroy'])->name('users.delete');
+
     Route::get('/users/permissions', [AdministrateurController::class, 'permissions'])->name('users.permissions');
+    Route::patch('/users/{user}/permissions', [AdministrateurController::class, 'updatePermission'])->name('users.permissions.update');
 });
 
-// Auth (Breeze)
+// Auth routes
 require __DIR__.'/auth.php';

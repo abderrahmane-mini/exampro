@@ -6,7 +6,8 @@
 <x-alert />
 
 <x-section>
-    <form action="{{ route('grades.store', $exam->id) }}" method="POST">
+    <form action="{{ route('enseignant.grades.store', $exam->id) }}" method="POST">
+
         @csrf
 
         <table class="w-full table-auto">

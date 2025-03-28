@@ -20,9 +20,10 @@ class EtudiantController extends Controller
 
         // ✅ Dashboard data for the student
         $groupExams = Exam::where('group_id', $user->group_id)
-                          ->whereDate('date', '>=', now()->toDateString())
-                          ->orderBy('date')
-                          ->get();
+            ->whereDate('start_time', '>=', now()->toDateString())
+            ->orderBy('start_time')
+            ->get();
+
 
         $examResults = $user->examResults()->with('exam.module')->get();
 
@@ -64,4 +65,37 @@ class EtudiantController extends Controller
             ]
         ];
     }
+
+
+    public function examSchedule()
+{
+    $user = Auth::user();
+
+    $exams = Exam::where('group_id', $user->group_id)
+                 ->with(['module', 'group', 'rooms'])
+                 ->orderBy('start_time')
+                 ->get();
+
+                 return view('exams.schedule', compact('exams'));
+
+}
+
+    public function viewGrades()
+    {
+        $user = Auth::user();
+
+        $examResults = $user->examResults()->with('exam.module')->get();
+
+        return view('grades.view', compact('examResults'));
+
+    }
+
+public function downloadReleve()
+{
+    $student = Auth::user();
+
+    // Redirect to the document controller's releve PDF logic if already handled there
+    return redirect()->route('documents.releve', $student->id);
+}
+
 }

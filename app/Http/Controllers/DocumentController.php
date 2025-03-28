@@ -16,7 +16,41 @@ class DocumentController extends Controller
         $this->middleware('auth');
     }
 
-    // ✅ Generate Relevé de Notes (Student Grade Report)
+    // ✅ List all exams (for teachers or directors)
+    public function index()
+    {
+        $user = auth()->user();
+
+        if ($user->isEnseignant()) {
+            $moduleIds = $user->modules->pluck('id');
+            $exams = Exam::whereIn('module_id', $moduleIds)->with('module', 'group')->get();
+            return view('documents.index', compact('exams'));
+        }
+
+        if ($user->isDirecteurPedagogique()) {
+            $exams = Exam::with('module', 'group')->get();
+            return view('documents.index', compact('exams'));
+        }
+
+        abort(403);
+    }
+
+    // ✅ Relevé de notes for a specific student (PDF)
+    public function releve(User $student)
+    {
+        $grades = $student->examResults()->with('exam.module')->get();
+        $average = $grades->avg('grade');
+
+        $pdf = Pdf::loadView('documents.releve', [
+            'student' => $student,
+            'grades' => $grades,
+            'average' => $average,
+        ]);
+
+        return $pdf->download('releve_notes_' . $student->id . '.pdf');
+    }
+
+    // ✅ Relevé de notes (PDF) for the logged-in student
     public function downloadReleve()
     {
         $student = Auth::user();
@@ -25,26 +59,37 @@ class DocumentController extends Controller
             abort(403);
         }
 
-        $results = ExamResult::where('student_id', $student->id)
-            ->with('exam.module')
-            ->get();
+        $grades = $student->examResults()->with('exam.module')->get();
+        $average = $grades->avg('grade');
 
-        $pdf = PDF::loadView('documents.releve', compact('student', 'results'));
+        $pdf = Pdf::loadView('documents.releve', [
+            'student' => $student,
+            'grades' => $grades,
+            'average' => $average,
+        ]);
+
         return $pdf->download('releve_notes.pdf');
     }
 
-    // ✅ Generate PV de Notes (Director: results by module/group)
+    // ✅ PV view only (HTML display)
+    public function pv($examId)
+    {
+        $exam = Exam::with(['module', 'group', 'rooms', 'results.student'])->findOrFail($examId);
+        return view('documents.pv', compact('exam'));
+    }
+
+    // ✅ PV generation (PDF) for director
     public function generatePV($examId)
     {
         $this->authorizeRole('directeur_pedagogique');
 
         $exam = Exam::with(['module', 'group', 'results.student'])->findOrFail($examId);
 
-        $pdf = PDF::loadView('documents.pv', compact('exam'));
+        $pdf = Pdf::loadView('documents.pv', compact('exam'));
         return $pdf->download("pv_notes_module_{$exam->module->name}.pdf");
     }
 
-    // ✅ Generate Attestation de Réussite (Student or Director)
+    // ✅ Attestation PDF for student or director
     public function downloadAttestation($studentId = null)
     {
         $user = Auth::user();
@@ -59,10 +104,11 @@ class DocumentController extends Controller
 
         $average = ExamResult::where('student_id', $student->id)->avg('grade');
 
-        $pdf = PDF::loadView('documents.attestation', compact('student', 'average'));
+        $pdf = Pdf::loadView('documents.attestation', compact('student', 'average'));
         return $pdf->download("attestation_{$student->name}.pdf");
     }
 
+    // ✅ Role check utility
     protected function authorizeRole($role)
     {
         if (Auth::user()->user_type !== $role) {

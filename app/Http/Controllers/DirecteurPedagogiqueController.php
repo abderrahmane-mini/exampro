@@ -8,7 +8,6 @@ use App\Models\Group;
 use App\Models\Module;
 use App\Models\Exam;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\View;
 
 class DirecteurPedagogiqueController extends Controller
 {
@@ -22,24 +21,16 @@ class DirecteurPedagogiqueController extends Controller
         $user = Auth::user();
         $menu = $this->getMenu();
 
-        // ✅ KPIs
-        $totalPrograms = Program::count();
-        $totalGroups = Group::count();
-        $totalStudents = User::where('user_type', 'etudiant')->count();
-        $totalTeachers = User::where('user_type', 'enseignant')->count();
-        $totalModules = Module::count();
-        $totalExams = Exam::count();
-
-        return view('directeur_pedagogique.dashboard', compact(
-            'user',
-            'menu',
-            'totalPrograms',
-            'totalGroups',
-            'totalStudents',
-            'totalTeachers',
-            'totalModules',
-            'totalExams'
-        ));
+        return view('directeur_pedagogique.dashboard', [
+            'user'           => $user,
+            'menu'           => $menu,
+            'totalPrograms'  => Program::count(),
+            'totalGroups'    => Group::count(),
+            'totalStudents'  => User::where('user_type', 'etudiant')->count(),
+            'totalTeachers'  => User::where('user_type', 'enseignant')->count(),
+            'totalModules'   => Module::count(),
+            'totalExams'     => Exam::count(),
+        ]);
     }
 
     public function getMenu()
@@ -47,7 +38,7 @@ class DirecteurPedagogiqueController extends Controller
         return [
             'Dashboard' => [
                 'icon' => 'dashboard',
-                'route' => 'dashboard' // ✅ Global route that redirects based on role
+                'route' => 'dashboard'
             ],
             'User Profile' => [
                 'icon' => 'user',
@@ -61,7 +52,7 @@ class DirecteurPedagogiqueController extends Controller
                 'Groupes' => [
                     'icon' => 'users',
                     'route' => 'groups.index'
-                ]
+                ],
             ],
             'Gestion des Étudiants' => [
                 'Étudiants' => [
@@ -97,9 +88,17 @@ class DirecteurPedagogiqueController extends Controller
                 ]
             ],
             'Documents officiels' => [
-                'PV / Relevés / Attestations' => [
+                'PV de notes' => [
                     'icon' => 'file-pdf',
                     'route' => 'documents.index'
+                ],
+                'Relevés de notes' => [
+                    'icon' => 'file-alt',
+                    'route' => 'grades.averages' // optional
+                ],
+                'Attestations de réussite' => [
+                    'icon' => 'file',
+                    'route' => 'documents.index' // or a dedicated attestation page
                 ]
             ]
         ];

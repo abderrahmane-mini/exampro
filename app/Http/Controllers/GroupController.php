@@ -17,8 +17,8 @@ class GroupController extends Controller
     // ✅ List all groups
     public function index()
     {
-        $groups = Group::with('program')->get();
-        return view('groups.index', compact('groups'));
+        $programs = Program::all();
+        return view('programs.index', compact('programs'));
     }
 
     // ✅ Show create form

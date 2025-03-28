@@ -99,15 +99,18 @@ class ExamController extends Controller
 
 
     public function schedule()
-{
-    // Example: Get the exams that the teacher is assigned to
-    $user = auth()->user();
-    $assignedModules = $user->modules; // Get the modules the teacher is assigned to
-    $exams = Exam::whereIn('module_id', $assignedModules->pluck('id'))
-                 ->orderBy('date')
-                 ->get();
-
-    return view('enseignant.exams.schedule', compact('exams'));
-}
+    {
+        $user = auth()->user();
+        $assignedModules = $user->modules;
+    
+        $exams = Exam::whereIn('module_id', $assignedModules->pluck('id'))
+                     ->with(['module', 'group', 'rooms']) // ✅ Eager load everything needed in the view
+                     ->orderBy('start_time')
+                     ->get();
+    
+                     return view('exams.schedule', compact('exams'));
+    }
+    
+    
 
 }

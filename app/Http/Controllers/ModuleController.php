@@ -33,7 +33,13 @@ class ModuleController extends Controller
 
         return redirect()->route('modules.index')->with('success', 'Module créé avec succès.');
     }
-
+    public function show(Module $module)
+    {
+        $this->authorize('view', $module); // Optional if you use policies
+    
+        return view('modules.show', compact('module'));
+    }
+    
     public function edit($id)
     {
         $module = Module::findOrFail($id);

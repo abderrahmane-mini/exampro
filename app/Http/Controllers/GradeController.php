@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Exam;
 use App\Models\ExamResult;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,19 +18,21 @@ class GradeController extends Controller
     public function selectExam()
     {
         $teacher = Auth::user();
+        // Get exams assigned to the teacher's modules
         $exams = Exam::whereIn('module_id', $teacher->modules->pluck('id'))->get();
         return view('grades.select_exam', compact('exams'));
     }
 
     // ✅ Grade entry form for an exam
-    public function enter($examId)
+    public function enter(Exam $exam)
     {
-        $exam = Exam::with('group.students')->findOrFail($examId);
+        // Fetch the exam with its related group and students
+        $exam->load('group.students');
         return view('grades.enter', compact('exam'));
     }
 
     // ✅ Save submitted grades
-    public function store(Request $request, $examId)
+    public function store(Request $request, Exam $exam)
     {
         $request->validate([
             'grades' => 'required|array',
@@ -39,8 +40,9 @@ class GradeController extends Controller
         ]);
 
         foreach ($request->grades as $studentId => $grade) {
+            // Update or create the exam result for each student
             ExamResult::updateOrCreate(
-                ['exam_id' => $examId, 'student_id' => $studentId],
+                ['exam_id' => $exam->id, 'student_id' => $studentId],
                 ['grade' => $grade]
             );
         }

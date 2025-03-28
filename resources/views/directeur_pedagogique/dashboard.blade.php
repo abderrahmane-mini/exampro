@@ -13,11 +13,10 @@
     </div>
     
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all 
-                    transform hover:-translate-y-2 p-6 border-l-4 border-green-500">
+        <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 p-6 border-l-4 border-green-500">
             <h3 class="text-lg font-semibold text-gray-600 mb-3">Nombre de Filières</h3>
             <div class="flex justify-between items-center">
-                <p class="text-3xl font-bold text-green-600">{{ $programsCount ?? 0 }}</p>
+                <p class="text-3xl font-bold text-green-600">{{ $totalPrograms ?? 0 }}</p>
                 <div class="bg-green-100 text-green-600 p-2 rounded-full">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5 8.445v5.127a1 1 0 00.553.894l4 2a1 1 0 00.894 0l4-2A1 1 0 0015 13.572v-5.127l2-1.527V17a1 1 0 102 0V4a1 1 0 00-.553-.894l-7-3z"/>
@@ -26,11 +25,10 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all 
-                    transform hover:-translate-y-2 p-6 border-l-4 border-blue-500">
+        <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 p-6 border-l-4 border-blue-500">
             <h3 class="text-lg font-semibold text-gray-600 mb-3">Nombre d'Étudiants</h3>
             <div class="flex justify-between items-center">
-                <p class="text-3xl font-bold text-blue-600">{{ $studentsCount ?? 0 }}</p>
+                <p class="text-3xl font-bold text-blue-600">{{ $totalStudents ?? 0 }}</p>
                 <div class="bg-blue-100 text-blue-600 p-2 rounded-full">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
@@ -39,11 +37,10 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all 
-                    transform hover:-translate-y-2 p-6 border-l-4 border-purple-500">
+        <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 p-6 border-l-4 border-purple-500">
             <h3 class="text-lg font-semibold text-gray-600 mb-3">Nombre de Modules</h3>
             <div class="flex justify-between items-center">
-                <p class="text-3xl font-bold text-purple-600">{{ $modulesCount ?? 0 }}</p>
+                <p class="text-3xl font-bold text-purple-600">{{ $totalModules ?? 0 }}</p>
                 <div class="bg-purple-100 text-purple-600 p-2 rounded-full">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
@@ -54,11 +51,11 @@
         </div>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-16"> <!-- Increased gap -->
+    <div class="grid md:grid-cols-2 gap-16">
         <div>
             <h2 class="text-2xl font-bold mb-4">Répartition des Filières</h2>
-            <div class="bg-white rounded-xl shadow-lg p-6 max-h-72 overflow-auto"> <!-- Limited height and added overflow for scrolling if needed -->
-                <canvas id="programDistributionChart" style="max-height: 300px;"></canvas> <!-- Added inline style for max-height -->
+            <div class="bg-white rounded-xl shadow-lg p-6 max-h-72 overflow-auto">
+                <canvas id="programDistributionChart" style="max-height: 300px;"></canvas>
             </div>
         </div>
     
@@ -73,7 +70,7 @@
                                 <p class="text-sm text-gray-600">{{ $module->code }}</p>
                             </div>
                             <span class="text-sm bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
-                                {{ $module->program_name }}
+                                {{ $module->program->name ?? 'Non défini' }}
                             </span>
                         </div>
                     @empty
@@ -93,10 +90,10 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: {{ json_encode($programNames ?? []) }},
+            labels: {!! json_encode($programNames ?? []) !!},
             datasets: [{
                 label: 'Nombre d\'Étudiants par Filière',
-                data: {{ json_encode($programStudentCounts ?? []) }},
+                data: {!! json_encode($programStudentCounts ?? []) !!},
                 backgroundColor: [
                     'rgba(54, 162, 235, 0.7)',
                     'rgba(75, 192, 192, 0.7)',
