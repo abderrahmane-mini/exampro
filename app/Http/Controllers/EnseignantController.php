@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Module;
+use App\Models\Exam;
 use Illuminate\Support\Facades\Auth;
 
 class EnseignantController extends Controller
@@ -16,8 +17,20 @@ class EnseignantController extends Controller
     {
         $user = Auth::user();
         $menu = $this->getMenu();
-        
-        return view('enseignant.dashboard', compact('user', 'menu'));
+
+        // ✅ Teacher dashboard data
+        $assignedModules = $user->modules()->with('exams')->get();
+        $upcomingExams = Exam::whereIn('module_id', $assignedModules->pluck('id'))
+                             ->whereDate('date', '>=', now()->toDateString())
+                             ->orderBy('date')
+                             ->get();
+
+        return view('enseignant.dashboard', compact(
+            'user',
+            'menu',
+            'assignedModules',
+            'upcomingExams'
+        ));
     }
 
     public function getMenu()
@@ -25,7 +38,7 @@ class EnseignantController extends Controller
         return [
             'Dashboard' => [
                 'icon' => 'dashboard',
-                'route' => 'dashboard'
+                'route' => 'enseignant.dashboard'
             ],
             'User Profile' => [
                 'icon' => 'user',
@@ -34,16 +47,16 @@ class EnseignantController extends Controller
             'Gestion des Examens' => [
                 'Planning' => [
                     'icon' => 'calendar',
-                    'route' => 'exams.schedule'
+                    'route' => 'enseignant.exams.schedule'
                 ],
                 'Résultats' => [
                     'icon' => 'file-alt',
                     'submenu' => [
                         'Saisie des Notes' => [
-                            'route' => 'grades.enter'
+                            'route' => 'enseignant.grades.enter'
                         ],
                         'Consultation des Notes' => [
-                            'route' => 'grades.view'
+                            'route' => 'enseignant.grades.view'
                         ]
                     ]
                 ]

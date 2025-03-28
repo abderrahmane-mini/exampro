@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class AdministrateurController extends Controller
@@ -16,8 +16,23 @@ class AdministrateurController extends Controller
     {
         $user = Auth::user();
         $menu = $this->getMenu();
-        
-        return view('administrateur.dashboard', compact('user', 'menu'));
+
+        // ✅ KPIs for admin overview
+        $totalUsers = User::count();
+        $totalAdmins = User::where('user_type', 'administrateur')->count();
+        $totalDirecteurs = User::where('user_type', 'directeur_pedagogique')->count();
+        $totalEnseignants = User::where('user_type', 'enseignant')->count();
+        $totalEtudiants = User::where('user_type', 'etudiant')->count();
+
+        return view('administrateur.dashboard', compact(
+            'user',
+            'menu',
+            'totalUsers',
+            'totalAdmins',
+            'totalDirecteurs',
+            'totalEnseignants',
+            'totalEtudiants'
+        ));
     }
 
     public function getMenu()
@@ -25,7 +40,7 @@ class AdministrateurController extends Controller
         return [
             'Dashboard' => [
                 'icon' => 'dashboard',
-                'route' => 'dashboard'
+                'route' => 'admin.dashboard'
             ],
             'User Profile' => [
                 'icon' => 'user',

@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Program;
+use App\Models\Group;
+use App\Models\Module;
+use App\Models\Exam;
 use Illuminate\Support\Facades\Auth;
 
 class DirecteurPedagogiqueController extends Controller
@@ -16,8 +20,25 @@ class DirecteurPedagogiqueController extends Controller
     {
         $user = Auth::user();
         $menu = $this->getMenu();
-        
-        return view('directeur_pedagogique.dashboard', compact('user', 'menu'));
+
+        // ✅ KPIs
+        $totalPrograms = Program::count();
+        $totalGroups = Group::count();
+        $totalStudents = User::where('user_type', 'etudiant')->count();
+        $totalTeachers = User::where('user_type', 'enseignant')->count();
+        $totalModules = Module::count();
+        $totalExams = Exam::count();
+
+        return view('directeur_pedagogique.dashboard', compact(
+            'user',
+            'menu',
+            'totalPrograms',
+            'totalGroups',
+            'totalStudents',
+            'totalTeachers',
+            'totalModules',
+            'totalExams'
+        ));
     }
 
     public function getMenu()
@@ -25,7 +46,7 @@ class DirecteurPedagogiqueController extends Controller
         return [
             'Dashboard' => [
                 'icon' => 'dashboard',
-                'route' => 'dashboard'
+                'route' => 'directeur.dashboard'
             ],
             'User Profile' => [
                 'icon' => 'user',
@@ -72,6 +93,12 @@ class DirecteurPedagogiqueController extends Controller
                             'route' => 'exams.results'
                         ]
                     ]
+                ]
+            ],
+            'Documents officiels' => [
+                'PV / Relevés / Attestations' => [
+                    'icon' => 'file-pdf',
+                    'route' => 'documents.index'
                 ]
             ]
         ];

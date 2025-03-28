@@ -15,7 +15,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'user_type' // Add this line
+        'user_type',
     ];
 
     protected $hidden = [
@@ -28,24 +28,31 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Role-specific methods
-    public function isDirecteurPedagogique()
+    // Role checkers
+    public function isDirecteurPedagogique() { return $this->user_type === 'directeur_pedagogique'; }
+    public function isEnseignant() { return $this->user_type === 'enseignant'; }
+    public function isEtudiant() { return $this->user_type === 'etudiant'; }
+    public function isAdministrateur() { return $this->user_type === 'administrateur'; }
+
+    // Relationships
+    public function group()
     {
-        return $this->user_type === 'directeur_pedagogique';
+        return $this->belongsTo(Group::class);
     }
 
-    public function isEnseignant()
+    public function modules()
     {
-        return $this->user_type === 'enseignant';
+        return $this->belongsToMany(Module::class, 'module_teacher', 'user_id', 'module_id');
+    }
+    
+
+    public function examResults()
+    {
+        return $this->hasMany(ExamResult::class, 'student_id');
     }
 
-    public function isEtudiant()
+    public function documents()
     {
-        return $this->user_type === 'etudiant';
-    }
-
-    public function isAdministrateur()
-    {
-        return $this->user_type === 'administrateur';
+        return $this->hasMany(Document::class);
     }
 }
