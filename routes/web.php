@@ -55,17 +55,29 @@ Route::middleware(['auth'])->group(function () {
 
 // 🎓 Directeur Pédagogique Routes
 Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
-    Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
-    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
-    Route::get('/students', [StudentController::class, 'index'])->name('students.index');
-    Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
-    Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
-    Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
+    // Programs
+    Route::resource('programs', ProgramController::class)->except(['show']);
 
+    // Groups
+    Route::resource('groups', GroupController::class)->except(['show']);
+
+    // Students
+    Route::resource('students', StudentController::class)->except(['show']);
+
+    // Teachers
+    Route::resource('teachers', TeacherController::class)->except(['show']);
+
+    // Modules
+    Route::resource('modules', ModuleController::class)->except(['show']);
+
+    // Rooms
+    Route::resource('rooms', RoomController::class)->except(['show']);
+    Route::get('/rooms/{room}/exams', [RoomController::class, 'exams'])->name('rooms.exams');
+
+    // Exams
     Route::get('/exams/planning/view', [ExamController::class, 'planning'])->name('exams.planning');
     Route::get('/exams/results', [ExamController::class, 'results'])->name('exams.results');
 });
-
 
 // 👨‍🏫 Enseignant Routes
 Route::middleware(['auth', 'role:enseignant'])->group(function () {
@@ -80,37 +92,25 @@ Route::middleware(['auth', 'role:enseignant'])->group(function () {
     Route::get('/enseignant/grades/enter/{exam}', [GradeController::class, 'enter'])->name('enseignant.grades.enter');
     Route::post('/enseignant/grades/enter/{exam}', [GradeController::class, 'store'])->name('enseignant.grades.store');
     Route::get('/enseignant/grades/view', [GradeController::class, 'view'])->name('enseignant.grades.view');
-    
 });
-
 
 // 🎓 Étudiant Routes
 Route::middleware(['auth', 'role:etudiant'])->group(function () {
     Route::get('/etudiant/dashboard', [EtudiantController::class, 'dashboard'])->name('etudiant.dashboard');
-
-    // ✅ Add this line to support exam schedule viewing
     Route::get('/etudiant/exams/schedule', [EtudiantController::class, 'examSchedule'])->name('etudiant.exams.schedule');
-
     Route::get('/etudiant/grades/view', [EtudiantController::class, 'viewGrades'])->name('etudiant.grades.view');
-    Route::get('/documents/releve/{student}', [DocumentController::class, 'releve'])->name('documents.releve');
-
     Route::get('/etudiant/releve/download', [EtudiantController::class, 'downloadReleve'])->name('etudiant.releve.download');
 });
-
 
 // 👤 Administrateur Routes
 Route::middleware(['auth', 'role:administrateur'])->group(function () {
     Route::get('/admin/dashboard', [AdministrateurController::class, 'dashboard'])->name('admin.dashboard');
-
     Route::get('/users/create', [AdministrateurController::class, 'create'])->name('users.create');
     Route::post('/users/store', [AdministrateurController::class, 'store'])->name('users.store');
-
     Route::get('/users/manage', [AdministrateurController::class, 'manage'])->name('users.manage');
-
     Route::get('/users/{user}/edit', [AdministrateurController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [AdministrateurController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [AdministrateurController::class, 'destroy'])->name('users.delete');
-
     Route::get('/users/permissions', [AdministrateurController::class, 'permissions'])->name('users.permissions');
     Route::patch('/users/{user}/permissions', [AdministrateurController::class, 'updatePermission'])->name('users.permissions.update');
 });
