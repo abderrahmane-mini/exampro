@@ -39,20 +39,20 @@ class EtudiantController extends Controller
     {
         return [
             'Dashboard' => [
-                'icon' => 'dashboard',
+                'icon' => 'fas fa-dashboard',
                 'route' => 'etudiant.dashboard'
             ],
             'User Profile' => [
-                'icon' => 'user',
+                'icon' => 'fas fa-user',
                 'route' => 'profile.edit'
             ],
             'Consultation des Examens' => [
                 'Planning' => [
-                    'icon' => 'calendar',
+                    'icon' => 'fas fa-calendar',
                     'route' => 'etudiant.exams.schedule'
                 ],
                 'Résultats' => [
-                    'icon' => 'file-alt',
+                    'icon' => 'fas fa-file-alt',
                     'submenu' => [
                         'Voir mes Notes' => [
                             'route' => 'etudiant.grades.view'

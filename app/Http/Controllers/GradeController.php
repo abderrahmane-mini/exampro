@@ -18,16 +18,16 @@ class GradeController extends Controller
     public function selectExam()
     {
         $teacher = Auth::user();
-        // Get exams assigned to the teacher's modules
         $exams = Exam::whereIn('module_id', $teacher->modules->pluck('id'))->get();
+
         return view('grades.select_exam', compact('exams'));
     }
 
     // ✅ Grade entry form for an exam
     public function enter(Exam $exam)
     {
-        // Fetch the exam with its related group and students
         $exam->load('group.students');
+
         return view('grades.enter', compact('exam'));
     }
 
@@ -40,7 +40,6 @@ class GradeController extends Controller
         ]);
 
         foreach ($request->grades as $studentId => $grade) {
-            // Update or create the exam result for each student
             ExamResult::updateOrCreate(
                 ['exam_id' => $exam->id, 'student_id' => $studentId],
                 ['grade' => $grade]
@@ -50,14 +49,16 @@ class GradeController extends Controller
         return redirect()->route('enseignant.grades.view')->with('success', 'Notes enregistrées.');
     }
 
-    // ✅ View grades (by teacher or director)
+    // ✅ View all grades (teacher or director)
     public function view()
     {
         $user = Auth::user();
 
         if ($user->isEnseignant()) {
             $examIds = Exam::whereIn('module_id', $user->modules->pluck('id'))->pluck('id');
-            $grades = ExamResult::whereIn('exam_id', $examIds)->with('exam.module', 'student')->get();
+            $grades = ExamResult::whereIn('exam_id', $examIds)
+                                ->with('exam.module', 'student')
+                                ->get();
         } elseif ($user->isDirecteurPedagogique()) {
             $grades = ExamResult::with('exam.module', 'student')->get();
         } else {
@@ -67,29 +68,31 @@ class GradeController extends Controller
         return view('grades.view', compact('grades'));
     }
 
-    // ✅ Calculate averages
+    // ✅ Calculate and display module + student averages
     public function calculateAverages()
     {
         $this->authorizeRole('directeur_pedagogique');
 
-        $moduleAverages = ExamResult::with('exam.module')
-            ->get()
-            ->groupBy(fn($r) => $r->exam->module->name)
-            ->map(fn($r) => round($r->avg('grade'), 2));
+        $results = ExamResult::with(['exam.module', 'student'])->get();
 
-        $studentAverages = ExamResult::with('student')
-            ->get()
-            ->groupBy('student_id')
-            ->map(function ($results) {
-                return [
-                    'student' => $results->first()->student->name ?? 'Inconnu',
-                    'average' => round($results->avg('grade'), 2),
-                ];
-            });
+        $moduleAverages = $results->groupBy(fn($r) => $r->exam->module->name ?? 'Inconnu')
+                                  ->map(fn($group) => round($group->avg('grade'), 2))
+                                  ->toArray();
+
+        $studentAverages = $results->groupBy('student_id')
+                                   ->map(function ($group) {
+                                       $studentName = $group->first()?->student?->name ?? 'Inconnu';
+                                       return [
+                                           'student' => $studentName,
+                                           'average' => round($group->avg('grade'), 2),
+                                       ];
+                                   })
+                                   ->toArray();
 
         return view('grades.averages', compact('moduleAverages', 'studentAverages'));
     }
 
+    // ✅ Role check helper
     protected function authorizeRole($role)
     {
         if (Auth::user()->user_type !== $role) {

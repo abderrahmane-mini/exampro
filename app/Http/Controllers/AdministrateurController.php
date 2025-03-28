@@ -35,16 +35,16 @@ class AdministrateurController extends Controller
     {
         return [
             'Dashboard' => [
-                'icon' => 'dashboard',
+                'icon' => 'fas fa-dashboard',
                 'route' => 'admin.dashboard'
             ],
             'User Profile' => [
-                'icon' => 'user',
+                'icon' => 'fas fa-user',
                 'route' => 'profile.edit'
             ],
             'Gestion des Comptes Utilisateurs' => [
                 'Comptes' => [
-                    'icon' => 'users',
+                    'icon' => 'fas fa-users',
                     'submenu' => [
                         'Créer Compte' => [
                             'route' => 'users.create'

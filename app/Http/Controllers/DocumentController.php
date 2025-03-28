@@ -89,24 +89,72 @@ class DocumentController extends Controller
         return $pdf->download("pv_notes_module_{$exam->module->name}.pdf");
     }
 
-    // ✅ Attestation PDF for student or director
-    public function downloadAttestation($studentId = null)
-    {
-        $user = Auth::user();
+public function downloadAttestation($studentId = null)
+{
+    $user = Auth::user();
 
-        if ($user->isEtudiant()) {
-            $student = $user;
-        } elseif ($user->isDirecteurPedagogique()) {
-            $student = User::where('user_type', 'etudiant')->findOrFail($studentId);
-        } else {
-            abort(403);
+    // 🎓 Étudiant télécharge sa propre attestation
+    if ($user->isEtudiant()) {
+        $student = $user;
+    }
+    // 👨‍🏫 Directeur télécharge celle d’un étudiant spécifique
+    elseif ($user->isDirecteurPedagogique()) {
+        if (!$studentId) {
+            abort(400, 'Identifiant étudiant requis.');
         }
 
-        $average = ExamResult::where('student_id', $student->id)->avg('grade');
-
-        $pdf = Pdf::loadView('documents.attestation', compact('student', 'average'));
-        return $pdf->download("attestation_{$student->name}.pdf");
+        $student = User::where('user_type', 'etudiant')->findOrFail($studentId);
     }
+    // 🔐 Tout autre rôle interdit
+    else {
+        abort(403, 'Accès non autorisé.');
+    }
+
+    $average = ExamResult::where('student_id', $student->id)->avg('grade') ?? 0;
+
+    $pdf = Pdf::loadView('documents.attestation', [
+        'student'  => $student,
+        'average'  => $average,
+        'location' => 'ESRMI'
+    ]);
+
+    $safeName = str_replace(' ', '_', strtolower($student->name));
+    return $pdf->download("attestation_{$safeName}.pdf");
+}
+
+
+
+    public function attestations()
+    {
+        $this->authorizeRole('directeur_pedagogique');
+    
+        $students = User::where('user_type', 'etudiant')->with('group')->get();
+    
+        return view('documents.attestations', compact('students'));
+    }
+    
+    public function showAttestation($studentId = null)
+{
+    $user = Auth::user();
+
+    if ($user->isEtudiant()) {
+        $student = $user;
+    } elseif ($user->isDirecteurPedagogique()) {
+        $student = User::where('user_type', 'etudiant')->findOrFail($studentId);
+    } else {
+        abort(403);
+    }
+
+    $average = ExamResult::where('student_id', $student->id)->avg('grade');
+
+    return view('documents.attestation', [
+        'student' => $student,
+        'average' => $average,
+        'location' => 'ESRMI'
+    ]);
+}
+
+
 
     // ✅ Role check utility
     protected function authorizeRole($role)

@@ -37,49 +37,52 @@ class DirecteurPedagogiqueController extends Controller
     {
         return [
             'Dashboard' => [
-                'icon' => 'dashboard',
+                'icon' => 'fas fa-dashboard',
                 'route' => 'dashboard'
             ],
             'User Profile' => [
-                'icon' => 'user',
+                'icon' => 'fas fa-user',
                 'route' => 'profile.edit'
             ],
             'Gestion des Filières et Groupes' => [
                 'Filières' => [
-                    'icon' => 'graduation-cap',
+                    'icon' => 'fas fa-graduation-cap',
                     'route' => 'programs.index'
                 ],
                 'Groupes' => [
-                    'icon' => 'users',
+                    'icon' => 'fas fa-users',
                     'route' => 'groups.index'
                 ],
             ],
             'Gestion des Étudiants' => [
                 'Étudiants' => [
-                    'icon' => 'user-graduate',
+                    'icon' => 'fas fa-user-graduate',
                     'route' => 'students.index'
                 ]
             ],
             'Gestion des Modules et Enseignants' => [
                 'Modules' => [
-                    'icon' => 'book',
+                    'icon' => 'fas fa-book',
                     'route' => 'modules.index'
                 ],
                 'Enseignants' => [
-                    'icon' => 'chalkboard-teacher',
+                    'icon' => 'fas fa-chalkboard-teacher',
                     'route' => 'teachers.index'
                 ]
             ],
             'Gestion des Salles et Examens' => [
                 'Salles' => [
-                    'icon' => 'building',
+                    'icon' => 'fas fa-building',
                     'route' => 'rooms.index'
                 ],
                 'Examens' => [
-                    'icon' => 'file-alt',
+                    'icon' => 'fas fa-file-alt',
                     'submenu' => [
                         'Planning' => [
                             'route' => 'exams.planning'
+                        ],
+                        'Créer un Examen' => [
+                            'route' => 'exams.create'
                         ],
                         'Résultats' => [
                             'route' => 'exams.results'
@@ -89,16 +92,16 @@ class DirecteurPedagogiqueController extends Controller
             ],
             'Documents officiels' => [
                 'PV de notes' => [
-                    'icon' => 'file-pdf',
+                    'icon' => 'fas fa-file-pdf',
                     'route' => 'documents.index'
                 ],
                 'Relevés de notes' => [
-                    'icon' => 'file-alt',
-                    'route' => 'grades.averages' // optional
+                    'icon' => 'fas fa-file-alt',
+                    'route' => 'grades.averages'
                 ],
                 'Attestations de réussite' => [
-                    'icon' => 'file',
-                    'route' => 'documents.index' // or a dedicated attestation page
+                    'icon' => 'fas fa-file',
+                    'route' => 'documents.attestation.view'
                 ]
             ]
         ];

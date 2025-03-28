@@ -67,29 +67,29 @@ class EnseignantController extends Controller
     {
         return [
             'Dashboard' => [
-                'icon' => 'dashboard',
+                'icon' => 'fas fa-dashboard',
                 'route' => 'enseignant.dashboard',
             ],
             'User Profile' => [
-                'icon' => 'user',
+                'icon' => 'fas fa-user',
                 'route' => 'profile.edit',
             ],
             'Gestion des Examens' => [
                 'Planning' => [
-                    'icon' => 'calendar',
-                    'route' => 'enseignant.exams.schedule', // Shows assigned exams
+                    'icon' => 'fas fa-calendar',
+                    'route' => 'enseignant.exams.schedule',
                 ],
                 'Résultats' => [
-                    'icon' => 'file-alt',
+                    'icon' => 'fas fa-file-alt',
                     'submenu' => [
                         'Saisie des Notes' => [
-                            'route' => 'enseignant.grades.select', // Fixed: now points to teacher's select route
+                            'route' => 'enseignant.grades.select',
                         ],
                         'Consultation des Notes' => [
                             'route' => 'enseignant.grades.view',
                         ],
                         'PV des Notes' => [
-                            'route' => 'documents.index', // Optional: if listing PVs
+                            'route' => 'documents.index',
                         ],
                     ],
                 ],
