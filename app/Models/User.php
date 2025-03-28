@@ -7,6 +7,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * App\Models\User
+ *
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Module[] $modules
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ExamResult[] $examResults
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Document[] $documents
+ * @property-read \App\Models\Group|null $group
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -28,13 +36,14 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Role checkers
+    // ✅ Role checkers
     public function isDirecteurPedagogique() { return $this->user_type === 'directeur_pedagogique'; }
     public function isEnseignant() { return $this->user_type === 'enseignant'; }
     public function isEtudiant() { return $this->user_type === 'etudiant'; }
     public function isAdministrateur() { return $this->user_type === 'administrateur'; }
 
-    // Relationships
+    // ✅ Relationships
+
     public function group()
     {
         return $this->belongsTo(Group::class);
@@ -44,7 +53,6 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Module::class, 'module_teacher', 'user_id', 'module_id');
     }
-    
 
     public function examResults()
     {

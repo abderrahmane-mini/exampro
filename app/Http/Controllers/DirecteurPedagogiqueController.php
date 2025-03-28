@@ -8,6 +8,7 @@ use App\Models\Group;
 use App\Models\Module;
 use App\Models\Exam;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 
 class DirecteurPedagogiqueController extends Controller
 {

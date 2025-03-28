@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Exam;
+use App\Models\ExamResult;
 use Illuminate\Support\Facades\Auth;
 
 class EtudiantController extends Controller
@@ -16,8 +17,21 @@ class EtudiantController extends Controller
     {
         $user = Auth::user();
         $menu = $this->getMenu();
-        
-        return view('etudiant.dashboard', compact('user', 'menu'));
+
+        // ✅ Dashboard data for the student
+        $groupExams = Exam::where('group_id', $user->group_id)
+                          ->whereDate('date', '>=', now()->toDateString())
+                          ->orderBy('date')
+                          ->get();
+
+        $examResults = $user->examResults()->with('exam.module')->get();
+
+        return view('etudiant.dashboard', compact(
+            'user',
+            'menu',
+            'groupExams',
+            'examResults'
+        ));
     }
 
     public function getMenu()
@@ -25,7 +39,7 @@ class EtudiantController extends Controller
         return [
             'Dashboard' => [
                 'icon' => 'dashboard',
-                'route' => 'dashboard'
+                'route' => 'etudiant.dashboard'
             ],
             'User Profile' => [
                 'icon' => 'user',
@@ -34,16 +48,16 @@ class EtudiantController extends Controller
             'Consultation des Examens' => [
                 'Planning' => [
                     'icon' => 'calendar',
-                    'route' => 'exams.schedule'
+                    'route' => 'etudiant.exams.schedule'
                 ],
                 'Résultats' => [
                     'icon' => 'file-alt',
                     'submenu' => [
                         'Voir mes Notes' => [
-                            'route' => 'grades.view'
+                            'route' => 'etudiant.grades.view'
                         ],
-                        'Télécharger Relevés' => [
-                            'route' => 'grades.download'
+                        'Télécharger Relevé' => [
+                            'route' => 'etudiant.releve.download'
                         ]
                     ]
                 ]

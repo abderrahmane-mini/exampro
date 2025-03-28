@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
+
 class AdministrateurController extends Controller
 {
     public function __construct()
