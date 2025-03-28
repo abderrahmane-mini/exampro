@@ -17,10 +17,13 @@ class GroupController extends Controller
     // ✅ List all groups
     public function index()
     {
-        $groups = Group::with('program')->get(); // Eager load the related program
+        // Eager load both 'program' and 'program.modules'
+        $groups = Group::with('program.modules')->get();
         $programs = Program::all();
+    
         return view('groups.index', compact('groups', 'programs'));
     }
+    
     
 
     // ✅ Show create form
@@ -96,23 +99,24 @@ class GroupController extends Controller
     public function saveStudentAssignments(Request $request, $groupId)
     {
         $group = Group::findOrFail($groupId);
-
+    
         $request->validate([
-            'student_ids' => 'nullable|array',
-            'student_ids.*' => 'exists:users,id'
+            'students' => 'nullable|array',
+            'students.*' => 'exists:users,id'
         ]);
-
-        // Update student group_id
-        User::where('user_type', 'etudiant')->whereIn('id', $request->student_ids ?? [])->update([
-            'group_id' => $group->id
-        ]);
-
-        // Optionally, remove students from this group who are not in the list
+    
+        // Assign checked students to the group
+        User::where('user_type', 'etudiant')
+            ->whereIn('id', $request->students ?? [])
+            ->update(['group_id' => $group->id]);
+    
+        // Unassign others previously in this group but now unchecked
         User::where('user_type', 'etudiant')
             ->where('group_id', $group->id)
-            ->whereNotIn('id', $request->student_ids ?? [])
+            ->whereNotIn('id', $request->students ?? [])
             ->update(['group_id' => null]);
-
+    
         return redirect()->route('groups.index')->with('success', 'Affectation des étudiants mise à jour.');
     }
+    
 }

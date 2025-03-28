@@ -39,4 +39,14 @@ class Exam extends Model
     {
         return $this->hasMany(ExamResult::class);
     }
+
+    public function teachers()
+    {
+        return $this->belongsToMany(User::class, 'exam_teacher', 'exam_id', 'teacher_id');
+    }
+
+    public function exams()
+    {
+        return $this->belongsToMany(Exam::class, 'exam_teacher');
+    }
 }

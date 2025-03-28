@@ -76,6 +76,17 @@
             <x-input-error :messages="$errors->get('semester')" />
         </div>
 
+        <!-- teacher -->
+        <div>
+            <x-input-label for="teacher_ids" value="Enseignants responsables" />
+            <select name="teacher_ids[]" id="teacher_ids" class="w-full border-gray-300 rounded" multiple>
+                @foreach(\App\Models\User::where('user_type', 'enseignant')->get() as $teacher)
+                    <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                @endforeach
+            </select>
+            <x-input-error :messages="$errors->get('teacher_ids')" />
+        </div>
+        
         <x-primary-button>Planifier</x-primary-button>
         <a href="{{ route('exams.index') }}" class="text-sm text-gray-500 underline">Annuler</a>
     </form>

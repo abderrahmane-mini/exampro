@@ -70,20 +70,28 @@
                     @enderror
                 </div>
 
-                {{-- Optional: Additional Fields --}}
-                {{-- You can add more fields here as needed --}}
+                {{-- Program Select --}}
+                <div>
+                    <x-input-label for="program_id" value="Filière (Programme)" />
+                    <select name="program_id" id="program_id" class="w-full border-gray-300 rounded">
+                        <option value="">-- Choisissez une filière --</option>
+                        @foreach($programs as $program)
+                            <option value="{{ $program->id }}" 
+                                {{ old('program_id', $module->program_id) == $program->id ? 'selected' : '' }}>
+                                {{ $program->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('program_id')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
                 {{-- Action Buttons --}}
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <x-primary-button type="submit">
-                            Mettre à jour
-                        </x-primary-button>
-                        
-                        <a 
-                            href="{{ route('modules.index') }}" 
-                            class="text-sm text-gray-600 hover:text-gray-900 underline"
-                        >
+                        <x-primary-button type="submit">Mettre à jour</x-primary-button>
+                        <a href="{{ route('modules.index') }}" class="text-sm text-gray-600 hover:text-gray-900 underline">
                             Annuler
                         </a>
                     </div>
@@ -92,27 +100,3 @@
         </x-section>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        // Optional: Add client-side validation
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const nameInput = document.getElementById('name');
-            const codeInput = document.getElementById('code');
-            
-            if (!nameInput.value.trim()) {
-                e.preventDefault();
-                alert('Veuillez saisir un nom de module.');
-                nameInput.focus();
-                return false;
-            }
-            
-            if (!codeInput.value.trim()) {
-                e.preventDefault();
-                alert('Veuillez saisir un code de module.');
-                codeInput.focus();
-                return false;
-            }
-        });
-    </script>
-@endpush

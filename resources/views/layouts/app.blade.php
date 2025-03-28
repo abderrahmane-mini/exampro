@@ -16,55 +16,53 @@
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <script src="//unpkg.com/alpinejs" defer></script>
 
-
-    <!-- Scripts -->
+    <!-- Tailwind & App -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
     @stack('styles')
-    
+
     <style>
-        /* Responsive sidebar behavior */
+        /* Sidebar responsiveness */
         @media (max-width: 767px) {
             .sidebar-desktop {
                 display: none;
             }
         }
-        
+
         @media (min-width: 768px) {
             .mobile-nav {
                 display: none;
             }
         }
-        
-        /* Smooth transitions */
+
         .sidebar-transition {
             transition: all 0.3s ease;
         }
-        
+
         .content-area {
             transition: margin-left 0.3s ease;
             width: 100%;
         }
-        
-        /* Fix for overlapping content */
+
         .main-content-container {
             margin-left: 0;
         }
-        
+
         @media (min-width: 768px) {
             .main-content-container {
                 margin-left: 16rem;
             }
         }
-        
-        /* Fixed sidebar */
+
         .sidebar-desktop {
             position: fixed;
             height: 100vh;
             z-index: 10;
+        }
+
+        .navbar-offset {
+            padding-top: 4rem; /* Adjust based on navbar height */
         }
     </style>
 </head>
@@ -75,7 +73,7 @@
     </div>
 
     <div class="min-h-screen flex">
-        <!-- Desktop Sidebar -->
+        <!-- Sidebar (Desktop) -->
         @auth
             <div class="sidebar-desktop">
                 @include('layouts.sidebar')
@@ -83,10 +81,15 @@
         @endauth
 
         <!-- Main Content Area -->
-        <div class="content-area main-content-container">
-            <!-- Page Heading -->
+        <div class="content-area main-content-container w-full">
+            <!-- Top Navbar -->
+            @auth
+                @include('layouts.navbar')
+            @endauth
+
+            <!-- Page Heading (Optional) -->
             @if (isset($header))
-                <header class="bg-white shadow">
+                <header class="bg-white shadow mt-16">
                     <div class="max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
@@ -94,7 +97,7 @@
             @endif
 
             <!-- Page Content -->
-            <main class="p-6">
+            <main class="p-6 mt-16">
                 @hasSection('content')
                     @yield('content')
                 @else
@@ -104,10 +107,9 @@
         </div>
     </div>
 
-    <!-- Mobile menu script -->
+    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Mobile menu toggle (from Breeze)
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
             
@@ -116,8 +118,7 @@
                     mobileMenu.classList.toggle('hidden');
                 });
             }
-            
-            // Close mobile menu when clicking on a link
+
             const mobileLinks = document.querySelectorAll('#mobile-menu a');
             mobileLinks.forEach(link => {
                 link.addEventListener('click', () => {

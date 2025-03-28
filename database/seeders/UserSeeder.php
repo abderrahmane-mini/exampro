@@ -12,8 +12,11 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        $program = Program::first();
-        $group = Group::first();
+        $program = Program::firstOrCreate(['name' => 'Informatique']);
+        $group = Group::firstOrCreate([
+            'name' => 'Groupe A',
+            'program_id' => $program->id
+        ]);
 
         User::create([
             'name' => 'Directeur Pédagogique',

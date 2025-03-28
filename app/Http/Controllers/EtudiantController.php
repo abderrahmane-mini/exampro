@@ -17,23 +17,54 @@ class EtudiantController extends Controller
     {
         $user = Auth::user();
         $menu = $this->getMenu();
-
-        // ✅ Dashboard data for the student
+    
+        // ✅ Upcoming exams
         $groupExams = Exam::where('group_id', $user->group_id)
             ->whereDate('start_time', '>=', now()->toDateString())
             ->orderBy('start_time')
             ->get();
-
-
+    
+        // ✅ Student's exam results
         $examResults = $user->examResults()->with('exam.module')->get();
-
+    
+        // ✅ Calculate average grade
+        $averageGrade = $examResults->count()
+            ? round($examResults->avg('grade'), 2)
+            : null;
+    
+        // ✅ Get unique module count
+        $registeredModulesCount = $examResults->pluck('exam.module_id')->unique()->count();
+    
+        // ✅ Upcoming exams count
+        $upcomingExamsCount = $groupExams->count();
+    
+        // ✅ Grades per module
+        $moduleGrades = $examResults->map(function ($result) {
+            return (object) [
+                'module_name' => $result->exam->module->name ?? 'N/A',
+                'module_code' => $result->exam->module->code ?? '',
+                'grade' => $result->grade,
+            ];
+        });
+    
+        // ✅ Data for chart (Progression des Notes)
+        $moduleNames = $moduleGrades->pluck('module_name');
+        $moduleGradeProgress = $moduleGrades->pluck('grade');
+    
         return view('etudiant.dashboard', compact(
             'user',
             'menu',
             'groupExams',
-            'examResults'
+            'examResults',
+            'averageGrade',
+            'registeredModulesCount',
+            'upcomingExamsCount',
+            'moduleGrades',
+            'moduleNames',
+            'moduleGradeProgress'
         ));
     }
+    
 
     public function getMenu()
     {
@@ -80,15 +111,15 @@ class EtudiantController extends Controller
 
 }
 
-    public function viewGrades()
-    {
-        $user = Auth::user();
+public function viewGrades()
+{
+    $user = Auth::user();
 
-        $examResults = $user->examResults()->with('exam.module')->get();
+    $grades = $user->examResults()->with(['exam.module', 'exam.group'])->get();
 
-        return view('grades.view', compact('examResults'));
+    return view('grades.view', compact('grades'));
+}
 
-    }
 
 public function downloadReleve()
 {

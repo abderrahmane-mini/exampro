@@ -11,6 +11,10 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('code')->unique()->nullable();
+
+            // Add this line to relate modules to a program
+            $table->foreignId('program_id')->nullable()->constrained()->onDelete('set null');
+
             $table->timestamps();
             $table->softDeletes();
         });

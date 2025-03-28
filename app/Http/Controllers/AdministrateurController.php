@@ -13,7 +13,11 @@ class AdministrateurController extends Controller
     {
         $this->middleware(['auth', 'role:administrateur']);
     }
-
+    public function show(User $user)
+    {
+        return view('administrateur.users.show', compact('user'));
+    }
+    
     public function dashboard()
     {
         $user = Auth::user();

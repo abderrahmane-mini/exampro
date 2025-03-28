@@ -9,19 +9,31 @@ class Module extends Model
 {
     use HasFactory;
 
-    // Update the fillable array to include both name and code
-    protected $fillable = ['name', 'code'];
+    // ✅ Include program_id so it's mass assignable
+    protected $fillable = ['name', 'code', 'program_id'];
 
-    // Relationship to teachers (Many-to-Many)
+    /**
+     * ✅ Many-to-Many relationship with teachers
+     */
     public function teachers()
     {
         return $this->belongsToMany(User::class, 'module_teacher', 'module_id', 'user_id')
-                    ->where('user_type', 'enseignant');  // Ensuring the user is of type 'enseignant'
+                    ->where('user_type', 'enseignant');
     }
 
-    // Relationship to exams (One-to-Many)
+    /**
+     * ✅ One-to-Many relationship with exams
+     */
     public function exams()
     {
         return $this->hasMany(Exam::class);
+    }
+
+    /**
+     * ✅ Belongs to one program
+     */
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
     }
 }

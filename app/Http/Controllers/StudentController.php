@@ -74,6 +74,7 @@ class StudentController extends Controller
             'email'    => $request->email,
             'group_id' => $request->group_id,
         ]);
+        
 
         return redirect()->route('students.index')->with('success', 'Étudiant mis à jour avec succès.');
     }

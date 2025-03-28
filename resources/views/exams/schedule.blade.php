@@ -11,6 +11,7 @@
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="p-2 text-left">Module</th>
+                        <th class="p-2 text-left">Filière</th> {{-- 👈 New column --}}
                         <th class="p-2 text-left">Groupe</th>
                         <th class="p-2 text-left">Date & Heure</th>
                         <th class="p-2 text-left">Salles</th>
@@ -20,6 +21,7 @@
                     @foreach($exams as $exam)
                         <tr class="border-b">
                             <td class="p-2">{{ $exam->module->name ?? '-' }}</td>
+                            <td class="p-2">{{ $exam->module->program->name ?? '-' }}</td> {{-- 👈 Program name --}}
                             <td class="p-2">{{ $exam->group->name ?? '-' }}</td>
                             <td class="p-2">{{ \Carbon\Carbon::parse($exam->start_time)->format('d/m/Y H:i') }}</td>
                             <td class="p-2">

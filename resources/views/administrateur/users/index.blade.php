@@ -6,7 +6,9 @@
 <x-alert />
 
 <x-section>
-    <a href="{{ route('users.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">Créer un nouvel utilisateur</a>
+    <a href="{{ route('users.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
+        + Créer un nouvel utilisateur
+    </a>
 
     @if($users->count())
         <table class="w-full table-auto">
@@ -15,7 +17,7 @@
                     <th class="p-2">Nom</th>
                     <th class="p-2">Email</th>
                     <th class="p-2">Rôle</th>
-                    <th class="p-2">Actions</th>
+                    <th class="p-2 text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,9 +26,30 @@
                     <td class="p-2">{{ $user->name }}</td>
                     <td class="p-2">{{ $user->email }}</td>
                     <td class="p-2 capitalize">{{ $user->user_type }}</td>
-                    <td class="p-2">
-                        <a href="{{ route('users.edit', $user->id) }}" class="text-blue-500 hover:underline">Modifier</a>
-                        <a href="#" class="text-red-500">Supprimer</a>
+                    <td class="p-2 text-center space-x-2">
+                        {{-- ✅ Show --}}
+                        <a href="{{ route('users.show', $user->id) }}" 
+                           class="text-gray-600 hover:underline">
+                            Voir
+                        </a>
+
+                        {{-- ✅ Edit --}}
+                        <a href="{{ route('users.edit', $user->id) }}" 
+                           class="text-blue-500 hover:underline">
+                            Modifier
+                        </a>
+
+                        {{-- ✅ Delete --}}
+                        <form action="{{ route('users.delete', $user->id) }}" 
+                              method="POST" 
+                              class="inline-block"
+                              onsubmit="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-500 hover:underline">
+                                Supprimer
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach

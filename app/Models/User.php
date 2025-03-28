@@ -19,12 +19,23 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // app/Models/User.php
+
     protected $fillable = [
         'name',
         'email',
         'password',
         'user_type',
+        'group_id',
+        'program_id',
+        'student_code',
+        'teacher_code',
+        'phone',
+        'birth_date',
+        'address',
+        'gender',
     ];
+
 
     protected $hidden = [
         'password',
@@ -37,10 +48,22 @@ class User extends Authenticatable
     ];
 
     // ✅ Role checkers
-    public function isDirecteurPedagogique() { return $this->user_type === 'directeur_pedagogique'; }
-    public function isEnseignant() { return $this->user_type === 'enseignant'; }
-    public function isEtudiant() { return $this->user_type === 'etudiant'; }
-    public function isAdministrateur() { return $this->user_type === 'administrateur'; }
+    public function isDirecteurPedagogique()
+    {
+        return $this->user_type === 'directeur_pedagogique';
+    }
+    public function isEnseignant()
+    {
+        return $this->user_type === 'enseignant';
+    }
+    public function isEtudiant()
+    {
+        return $this->user_type === 'etudiant';
+    }
+    public function isAdministrateur()
+    {
+        return $this->user_type === 'administrateur';
+    }
 
     // ✅ Relationships
 
@@ -49,11 +72,11 @@ class User extends Authenticatable
         return $this->belongsTo(Group::class);
     }
 
-// In User.php model
-public function modules()
-{
-    return $this->belongsToMany(Module::class, 'module_teacher', 'user_id', 'module_id');
-}
+    // In User.php model
+    public function modules()
+    {
+        return $this->belongsToMany(Module::class, 'module_teacher', 'user_id', 'module_id');
+    }
 
     public function examResults()
     {
@@ -64,4 +87,11 @@ public function modules()
     {
         return $this->hasMany(Document::class);
     }
+
+    public function exams()
+    {
+        return $this->belongsToMany(Exam::class, 'exam_teacher', 'teacher_id', 'exam_id');
+    }
+
+
 }

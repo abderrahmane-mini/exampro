@@ -19,6 +19,8 @@
                     <th class="p-2">Salle(s)</th>
                     <th class="p-2">Date</th>
                     <th class="p-2">Heure</th>
+                    <th class="p-2">Enseignant(s)</th>
+                    <th class="p-2 text-center">Actions</th> {{-- ✅ New column for actions --}}
                 </tr>
             </thead>
             <tbody>
@@ -33,6 +35,20 @@
                     </td>
                     <td class="p-2">{{ \Carbon\Carbon::parse($exam->start_time)->format('d/m/Y') }}</td>
                     <td class="p-2">{{ \Carbon\Carbon::parse($exam->start_time)->format('H:i') }}</td>
+                    <td class="p-2">
+                        @forelse($exam->teachers as $teacher)
+                            <span class="inline-block bg-blue-100 text-sm px-2 py-1 rounded text-blue-800 mr-1">
+                                {{ $teacher->name }}
+                            </span>
+                        @empty
+                            <span class="text-gray-400 italic text-sm">Aucun</span>
+                        @endforelse
+                    </td>
+                    <td class="p-2 text-center">
+                        <a href="{{ route('exams.edit', $exam->id) }}" class="text-blue-600 hover:underline">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                    </td>
                 </tr>
                 @endforeach
             </tbody>

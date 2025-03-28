@@ -17,7 +17,8 @@
 
     <div class="info">
         <p><strong>Nom :</strong> {{ $student->name }}</p>
-        <p><strong>Groupe :</strong> {{ $student->group->name }}</p>
+        <p><strong>Groupe :</strong> {{ $student->group->name ?? 'Non assigné' }}</p>
+
     </div>
 
     <table>

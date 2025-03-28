@@ -48,13 +48,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documents/pv/{exam}', [DocumentController::class, 'pv'])->name('documents.pv');
 });
 
-// 📝 Grades (Directeur only)
-Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
-    Route::get('/grades/averages', [GradeController::class, 'calculateAverages'])->name('grades.averages');
-});
 
 // 🎓 Directeur Pédagogique Routes
 Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
+    // 📝 Grades (Directeur only)
+    Route::get('/grades/averages', [GradeController::class, 'calculateAverages'])->name('grades.averages');
+
     // Programs (Filières)
     Route::resource('programs', ProgramController::class)->except(['show']);
     // Groups
@@ -79,6 +78,9 @@ Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
     Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');
     Route::get('/exams/create', [ExamController::class, 'create'])->name('exams.create');
     Route::post('/exams', [ExamController::class, 'store'])->name('exams.store');
+    Route::get('exams/{id}/edit', [ExamController::class, 'edit'])->name('exams.edit');
+    Route::put('exams/{id}', [ExamController::class, 'update'])->name('exams.update');
+
     // Planning & Results
     Route::get('/exams/planning/view', [ExamController::class, 'planning'])->name('exams.planning');
     Route::get('/exams/results', [ExamController::class, 'results'])->name('exams.results');
@@ -93,7 +95,9 @@ Route::middleware(['auth', 'role:enseignant'])->group(function () {
     Route::get('/enseignant/exams/schedule', [ExamController::class, 'schedule'])->name('enseignant.exams.schedule');
 
     Route::get('/enseignant/modules/{module}', [ModuleController::class, 'show'])->name('modules.details');
-
+    Route::get('/enseignant/grades/edit/{exam}/{student}', [GradeController::class, 'edit'])->name('enseignant.grades.edit');
+    Route::put('/enseignant/grades/update/{exam}/{student}', [GradeController::class, 'update'])->name('enseignant.grades.update');
+    
     Route::get('/enseignant/grades/select', [GradeController::class, 'selectExam'])->name('enseignant.grades.select');
     Route::get('/enseignant/grades/enter/{exam}', [GradeController::class, 'enter'])->name('enseignant.grades.enter');
     Route::post('/enseignant/grades/enter/{exam}', [GradeController::class, 'store'])->name('enseignant.grades.store');
@@ -116,6 +120,10 @@ Route::middleware(['auth', 'role:administrateur'])->group(function () {
     Route::post('/users/store', [AdministrateurController::class, 'store'])->name('users.store');
 
     Route::get('/users/manage', [AdministrateurController::class, 'manage'])->name('users.manage');
+
+    // ✅ Show user (required to fix the "GET method is not supported" error)
+    Route::get('/users/{user}', [AdministrateurController::class, 'show'])->name('users.show');
+
     Route::get('/users/{user}/edit', [AdministrateurController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [AdministrateurController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [AdministrateurController::class, 'destroy'])->name('users.delete');
@@ -123,6 +131,7 @@ Route::middleware(['auth', 'role:administrateur'])->group(function () {
     Route::get('/users/permissions', [AdministrateurController::class, 'permissions'])->name('users.permissions');
     Route::patch('/users/{user}/permissions', [AdministrateurController::class, 'updatePermission'])->name('users.permissions.update');
 });
+
 
 // Auth
 require __DIR__ . '/auth.php';

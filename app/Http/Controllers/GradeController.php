@@ -18,10 +18,11 @@ class GradeController extends Controller
     public function selectExam()
     {
         $teacher = Auth::user();
-        $exams = Exam::whereIn('module_id', $teacher->modules->pluck('id'))->get();
-
+        $exams = $teacher->exams()->with(['module', 'group'])->get();
+    
         return view('grades.select_exam', compact('exams'));
     }
+    
 
     // ✅ Grade entry form for an exam
     public function enter(Exam $exam)
@@ -99,4 +100,32 @@ class GradeController extends Controller
             abort(403);
         }
     }
+
+
+    // ✅ Edit a specific grade
+public function edit($examId, $studentId)
+{
+    $grade = ExamResult::where('exam_id', $examId)
+                       ->where('student_id', $studentId)
+                       ->with(['student', 'exam.module'])
+                       ->firstOrFail();
+
+    return view('grades.edit', compact('grade'));
+}
+
+// ✅ Update a specific grade
+public function update(Request $request, $examId, $studentId)
+{
+    $request->validate([
+        'grade' => 'required|numeric|min:0|max:20',
+    ]);
+
+    ExamResult::updateOrCreate(
+        ['exam_id' => $examId, 'student_id' => $studentId],
+        ['grade' => $request->grade]
+    );
+
+    return redirect()->route('enseignant.grades.view')->with('success', 'Note mise à jour.');
+}
+
 }
