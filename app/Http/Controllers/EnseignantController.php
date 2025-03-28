@@ -19,12 +19,11 @@ class EnseignantController extends Controller
         $menu = $this->getMenu();
 
         // ✅ Teacher dashboard data
-        $assignedModules = $user->modules()->with('exams')->get();
+        $assignedModules = $user->modules()->with('exams')->get(); // Get modules and their related exams
         $upcomingExams = Exam::whereIn('module_id', $assignedModules->pluck('id'))
-                             ->whereDate('date', '>=', now()->toDateString())
-                             ->orderBy('date')
-                             ->get();
-
+        ->where('start_time', '>=', now()) // Use start_time to check upcoming exams
+        ->orderBy('start_time') // Order by start_time
+        ->get();
         return view('enseignant.dashboard', compact(
             'user',
             'menu',

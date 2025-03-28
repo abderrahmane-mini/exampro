@@ -47,7 +47,7 @@ class DirecteurPedagogiqueController extends Controller
         return [
             'Dashboard' => [
                 'icon' => 'dashboard',
-                'route' => 'directeur.dashboard'
+                'route' => 'dashboard' // ✅ Global route that redirects based on role
             ],
             'User Profile' => [
                 'icon' => 'user',

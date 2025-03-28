@@ -1,17 +1,15 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
-        </div>
-    </div>
-</x-app-layout>
+@section('content')
+    <x-page-title title="Tableau de bord" subtitle="Bienvenue sur la plateforme ExamPro" />
+
+    <x-alert />
+
+    <x-section>
+        <p class="text-gray-600">Vous êtes connecté en tant que <strong>{{ Auth::user()->user_type }}</strong>.</p>
+
+        <p class="mt-2 text-sm text-gray-500">
+            Utilisez le menu latéral pour accéder aux fonctionnalités adaptées à votre rôle.
+        </p>
+    </x-section>
+@endsection

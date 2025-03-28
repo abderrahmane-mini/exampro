@@ -49,10 +49,11 @@ class User extends Authenticatable
         return $this->belongsTo(Group::class);
     }
 
-    public function modules()
-    {
-        return $this->belongsToMany(Module::class, 'module_teacher', 'user_id', 'module_id');
-    }
+// In User.php model
+public function modules()
+{
+    return $this->belongsToMany(Module::class, 'module_teacher', 'user_id', 'module_id');
+}
 
     public function examResults()
     {

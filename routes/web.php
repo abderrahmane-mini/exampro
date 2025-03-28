@@ -1,81 +1,92 @@
 <?php
 
-
-use App\Http\Controllers\DirecteurPedagogiqueController;
-use App\Http\Controllers\EnseignantController;
-use App\Http\Controllers\EtudiantController;
-use App\Http\Controllers\AdministrateurController;
-use App\Http\Controllers\ExamController;
-use App\Http\Controllers\GradeController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\{
+    AdministrateurController,
+    DirecteurPedagogiqueController,
+    EnseignantController,
+    EtudiantController,
+    ExamController,
+    GradeController,
+    ProfileController,
+    ProgramController,
+    GroupController,
+    StudentController,
+    TeacherController,
+    ModuleController,
+    RoomController,
+    DocumentController
+};
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// 🌐 Public landing
+Route::get('/', fn () => view('welcome'));
 
-// Dynamic Dashboard Routing Based on User Type
+// 🔐 Dashboard redirect based on role
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    
-    switch ($user->user_type) {
-        case 'directeur_pedagogique':
-            return (new DirecteurPedagogiqueController())->dashboard();
-        case 'enseignant':
-            return (new EnseignantController())->dashboard();
-        case 'etudiant':
-            return (new EtudiantController())->dashboard();
-        case 'administrateur':
-            return (new AdministrateurController())->dashboard();
-        default:
-            return view('dashboard');
-    }
+    return match ($user->user_type) {
+        'directeur_pedagogique' => app(DirecteurPedagogiqueController::class)->dashboard(),
+        'enseignant' => app(EnseignantController::class)->dashboard(),
+        'etudiant' => app(EtudiantController::class)->dashboard(),
+        'administrateur' => app(AdministrateurController::class)->dashboard(),
+        default => view('dashboard'),
+    };
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Profile Routes (Editing, Updating, and Deleting Profile)
-Route::middleware(['auth', 'verified'])->group(function () {
+// 🔐 Profile management
+Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Exam Routes (Accessible to Multiple Roles)
-Route::middleware('auth')->group(function () {
-    Route::get('/exams/schedule', [ExamController::class, 'schedule'])->name('exams.schedule');
+// 📝 Grades (Teacher + Director)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/grades/select', [GradeController::class, 'selectExam'])->name('grades.select');
+    Route::get('/grades/enter/{exam}', [GradeController::class, 'enter'])->name('grades.enter');
+    Route::post('/grades/enter/{exam}', [GradeController::class, 'store'])->name('grades.store');
+    Route::get('/grades/view', [GradeController::class, 'view'])->name('grades.view');
+    Route::get('/grades/averages', [GradeController::class, 'averages'])->name('grades.averages');
+});
+
+// 📄 Documents (Student / Director)
+Route::middleware(['auth'])->group(function () {
+    // Add the missing documents.index route
+    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+    Route::get('/documents/releve/{student}', [DocumentController::class, 'releve'])->name('documents.releve');
+    Route::get('/documents/attestation/{student}', [DocumentController::class, 'attestation'])->name('documents.attestation');
+    Route::get('/documents/pv/{exam}', [DocumentController::class, 'pv'])->name('documents.pv');
+});
+
+// 🎓 Directeur Pédagogique routes
+Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
+    Route::resource('programs', ProgramController::class)->except(['show']);
+    Route::resource('groups', GroupController::class)->except(['show']);
+    Route::get('/groups/{group}/assign', [GroupController::class, 'assign'])->name('groups.assign');
+    Route::post('/groups/{group}/assign', [GroupController::class, 'storeAssignment'])->name('groups.assign.store');
+    
+    Route::resource('students', StudentController::class)->except(['show']);
+    Route::resource('teachers', TeacherController::class)->except(['show']);
+    Route::resource('modules', ModuleController::class)->except(['show']);
+    Route::resource('rooms', RoomController::class)->except(['show']);
+    Route::get('/rooms/{room}/exams', [RoomController::class, 'exams'])->name('rooms.exams');
+
+    Route::resource('exams', ExamController::class)->except(['show']);
+    Route::get('/exams/planning/view', [ExamController::class, 'planning'])->name('exams.planning');
     Route::get('/exams/results', [ExamController::class, 'results'])->name('exams.results');
 });
 
-// Grade Routes
-Route::middleware('auth')->group(function () {
-    Route::get('/grades/enter', [GradeController::class, 'enter'])->name('grades.enter');
-    Route::get('/grades/view', [GradeController::class, 'view'])->name('grades.view');
-    Route::get('/grades/download', [GradeController::class, 'download'])->name('grades.download');
-});
-
-// Role-Specific Routes
-Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
-    Route::get('/directeur/dashboard', [DirecteurPedagogiqueController::class, 'dashboard'])->name('directeur.dashboard');
-    Route::get('/programs', [DirecteurPedagogiqueController::class, 'programs'])->name('programs.index');
-    Route::get('/groups', [DirecteurPedagogiqueController::class, 'groups'])->name('groups.index');
-    Route::get('/students', [DirecteurPedagogiqueController::class, 'students'])->name('students.index');
-    Route::get('/modules', [DirecteurPedagogiqueController::class, 'modules'])->name('modules.index');
-    Route::get('/teachers', [DirecteurPedagogiqueController::class, 'teachers'])->name('teachers.index');
-    Route::get('/rooms', [DirecteurPedagogiqueController::class, 'rooms'])->name('rooms.index');
-
-    Route::prefix('exams')->group(function () {
-        Route::get('/planning', [ExamController::class, 'planning'])->name('exams.planning');
-        Route::get('/results', [ExamController::class, 'results'])->name('exams.results');
-    });
-});
-
+// 👨‍🏫 Enseignant
 Route::middleware(['auth', 'role:enseignant'])->group(function () {
     Route::get('/enseignant/dashboard', [EnseignantController::class, 'dashboard'])->name('enseignant.dashboard');
 });
 
+// 🎓 Étudiant
 Route::middleware(['auth', 'role:etudiant'])->group(function () {
     Route::get('/etudiant/dashboard', [EtudiantController::class, 'dashboard'])->name('etudiant.dashboard');
 });
 
+// 👤 Administrateur
 Route::middleware(['auth', 'role:administrateur'])->group(function () {
     Route::get('/admin/dashboard', [AdministrateurController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/users/create', [AdministrateurController::class, 'create'])->name('users.create');
@@ -83,5 +94,5 @@ Route::middleware(['auth', 'role:administrateur'])->group(function () {
     Route::get('/users/permissions', [AdministrateurController::class, 'permissions'])->name('users.permissions');
 });
 
-// Authentication Routes (Breeze)
+// Auth (Breeze)
 require __DIR__.'/auth.php';

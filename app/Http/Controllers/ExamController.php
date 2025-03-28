@@ -16,6 +16,8 @@ class ExamController extends Controller
         $this->middleware('auth');
     }
 
+    
+
     // ✅ Show all exams (director)
     public function index()
     {
@@ -41,7 +43,7 @@ class ExamController extends Controller
     public function store(Request $request)
     {
         $this->authorizeRole('directeur_pedagogique');
-
+    
         $request->validate([
             'module_id' => 'required|exists:modules,id',
             'group_id'  => 'required|exists:groups,id',
@@ -50,29 +52,43 @@ class ExamController extends Controller
             'date'      => 'required|date',
             'time'      => 'required',
         ]);
-
-        $exam = Exam::create($request->only('module_id', 'group_id', 'date', 'time'));
+    
+        // Combine the date and time fields into a single datetime for `start_time`
+        $startTime = $request->date . ' ' . $request->time;
+        
+        $exam = Exam::create([
+            'module_id' => $request->module_id,
+            'group_id'  => $request->group_id,
+            'start_time' => $startTime, // Use start_time instead of date
+        ]);
+    
         $exam->rooms()->sync($request->rooms);
-
+    
         return redirect()->route('exams.index')->with('success', 'Examen planifié.');
     }
+    
 
     // ✅ Show planning view (for student/teacher)
     public function planning()
     {
         $user = Auth::user();
-
+    
         if ($user->isEtudiant()) {
-            $exams = Exam::where('group_id', $user->group_id)->with('module', 'rooms')->get();
+            $exams = Exam::where('group_id', $user->group_id)
+                         ->with('module', 'rooms')
+                         ->get();
         } elseif ($user->isEnseignant()) {
             $moduleIds = $user->modules->pluck('id');
-            $exams = Exam::whereIn('module_id', $moduleIds)->with('module', 'group', 'rooms')->get();
+            $exams = Exam::whereIn('module_id', $moduleIds)
+                         ->with('module', 'group', 'rooms')
+                         ->get();
         } else {
             abort(403);
         }
-
+    
         return view('exams.planning', compact('exams'));
     }
+    
 
     protected function authorizeRole($role)
     {
@@ -80,4 +96,18 @@ class ExamController extends Controller
             abort(403);
         }
     }
+
+
+    public function schedule()
+{
+    // Example: Get the exams that the teacher is assigned to
+    $user = auth()->user();
+    $assignedModules = $user->modules; // Get the modules the teacher is assigned to
+    $exams = Exam::whereIn('module_id', $assignedModules->pluck('id'))
+                 ->orderBy('date')
+                 ->get();
+
+    return view('enseignant.exams.schedule', compact('exams'));
+}
+
 }
