@@ -65,11 +65,16 @@ class DirecteurPedagogiqueController extends Controller
                     'icon' => 'fas fa-book',
                     'route' => 'modules.index'
                 ],
+                'Assigner Modules' => [
+                    'icon' => 'fas fa-link',
+                    'route' => 'modules.assign.view' // You'll define this route/controller below
+                ],
                 'Enseignants' => [
                     'icon' => 'fas fa-chalkboard-teacher',
                     'route' => 'teachers.index'
                 ]
             ],
+
             'Gestion des Salles et Examens' => [
                 'Salles' => [
                     'icon' => 'fas fa-building',
@@ -78,6 +83,9 @@ class DirecteurPedagogiqueController extends Controller
                 'Examens' => [
                     'icon' => 'fas fa-file-alt',
                     'submenu' => [
+                        'Tous les Examens' => [
+                            'route' => 'exams.index' // 👈 Route to list all exams
+                        ],
                         'Planning' => [
                             'route' => 'exams.planning'
                         ],
@@ -89,6 +97,7 @@ class DirecteurPedagogiqueController extends Controller
                         ]
                     ]
                 ]
+
             ],
             'Documents officiels' => [
                 'PV de notes' => [

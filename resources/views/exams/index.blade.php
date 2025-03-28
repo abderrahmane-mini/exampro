@@ -31,8 +31,8 @@
                             <span class="inline-block bg-gray-200 text-sm px-2 py-1 rounded mr-1">{{ $room->name }}</span>
                         @endforeach
                     </td>
-                    <td class="p-2">{{ $exam->date }}</td>
-                    <td class="p-2">{{ $exam->time }}</td>
+                    <td class="p-2">{{ \Carbon\Carbon::parse($exam->start_time)->format('d/m/Y') }}</td>
+                    <td class="p-2">{{ \Carbon\Carbon::parse($exam->start_time)->format('H:i') }}</td>
                 </tr>
                 @endforeach
             </tbody>

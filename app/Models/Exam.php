@@ -9,7 +9,16 @@ class Exam extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['module_id', 'group_id', 'date', 'time'];
+    protected $fillable = [
+        'module_id',
+        'group_id',
+        'start_time',
+        'end_time',
+        'academic_year',
+        'semester',
+        'status',
+        'created_by',
+    ];
 
     public function module()
     {

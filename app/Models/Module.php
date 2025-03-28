@@ -9,7 +9,8 @@ class Module extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    // Update the fillable array to include both name and code
+    protected $fillable = ['name', 'code'];
 
     // Relationship to teachers (Many-to-Many)
     public function teachers()

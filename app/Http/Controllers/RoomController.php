@@ -67,7 +67,15 @@ class RoomController extends Controller
     // Optional: View assigned exams to a room
     public function exams($roomId)
     {
-        $room = Room::with('exams')->findOrFail($roomId);
-        return view('rooms.exams', compact('room'));
+        $room = \App\Models\Room::findOrFail($roomId);
+    
+        $exams = \App\Models\Exam::with(['module', 'group'])
+            ->whereHas('rooms', function ($query) use ($roomId) {
+                $query->where('room_id', $roomId);
+            })
+            ->get();
+    
+        return view('rooms.exams', compact('room', 'exams'));
     }
+    
 }

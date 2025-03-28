@@ -17,9 +17,11 @@ class GroupController extends Controller
     // ✅ List all groups
     public function index()
     {
+        $groups = Group::with('program')->get(); // Eager load the related program
         $programs = Program::all();
-        return view('programs.index', compact('programs'));
+        return view('groups.index', compact('groups', 'programs'));
     }
+    
 
     // ✅ Show create form
     public function create()
@@ -79,9 +81,16 @@ class GroupController extends Controller
     {
         $group = Group::findOrFail($groupId);
         $students = User::where('user_type', 'etudiant')->get();
-
-        return view('groups.assign', compact('group', 'students'));
+    
+        // Get IDs of students already assigned to this group
+        $assignedStudentIds = User::where('user_type', 'etudiant')
+            ->where('group_id', $group->id)
+            ->pluck('id')
+            ->toArray();
+    
+        return view('groups.assign', compact('group', 'students', 'assignedStudentIds'));
     }
+    
 
     // ✅ Save student assignments
     public function saveStudentAssignments(Request $request, $groupId)

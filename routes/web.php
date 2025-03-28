@@ -19,7 +19,7 @@ use App\Http\Controllers\{
 };
 
 // 🌐 Public landing
-Route::get('/', fn () => view('welcome'));
+Route::get('/', fn() => view('welcome'));
 
 // 🔐 Dashboard redirect based on role
 Route::get('/dashboard', function () {
@@ -59,12 +59,19 @@ Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
     Route::resource('programs', ProgramController::class)->except(['show']);
     // Groups
     Route::resource('groups', GroupController::class)->except(['show']);
+    // 👥 Assign students to a group
+    Route::get('/groups/{group}/assign', [GroupController::class, 'assignStudents'])->name('groups.assign');
+    Route::post('/groups/{group}/assign', [GroupController::class, 'saveStudentAssignments'])->name('groups.assign.save');
+
     // Students
     Route::resource('students', StudentController::class)->except(['show']);
     // Teachers
     Route::resource('teachers', TeacherController::class)->except(['show']);
     // Modules
     Route::resource('modules', ModuleController::class)->except(['show']);
+    Route::get('/modules/assign', [ModuleController::class, 'assignView'])->name('modules.assign.view');
+    Route::post('/modules/assign', [ModuleController::class, 'saveAssignments'])->name('modules.assign.save');
+
     // Rooms
     Route::resource('rooms', RoomController::class)->except(['show']);
     Route::get('/rooms/{room}/exams', [RoomController::class, 'exams'])->name('rooms.exams');
@@ -78,7 +85,6 @@ Route::middleware(['auth', 'role:directeur_pedagogique'])->group(function () {
     Route::get('/documents/attestations', [DocumentController::class, 'attestations'])->name('documents.attestations');
     Route::get('/documents/attestations/{student?}', [DocumentController::class, 'showAttestation'])->name('documents.attestation.view');
     Route::get('/documents/attestation/download/{student}', [DocumentController::class, 'downloadAttestation'])->name('documents.attestation.download');
-
 });
 
 // 👨‍🏫 Enseignant Routes
@@ -119,4 +125,4 @@ Route::middleware(['auth', 'role:administrateur'])->group(function () {
 });
 
 // Auth
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
