@@ -36,8 +36,8 @@
         <!-- Logo Section -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200">
             <div class="flex items-center space-x-2">
-                <img src="{{ asset('images/school-logo.png') }}" alt="Logo" class="h-10 w-10 rounded-full shadow-md">
-                <span x-show="open" x-transition class="text-xl font-bold text-gray-800 tracking-wider">ESRMI</span>
+                <img src="{{ asset('images/examprologo.png') }}" alt="Logo" class="h-10 w-10 rounded-full shadow-md">
+                <span x-show="open" x-transition class="text-xl font-bold text-gray-800 tracking-wider">ExamPro</span>
             </div>
             <button @click="open = !open" class="text-gray-600 hover:text-gray-900 focus:outline-none transition transform hover:rotate-90">
                 <i class="fas" :class="open ? 'fa-chevron-left' : 'fa-bars'"></i>
