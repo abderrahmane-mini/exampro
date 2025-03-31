@@ -17,16 +17,28 @@ class ExamController extends Controller
         $this->middleware('auth');
     }
 
-    // ✅ Show all exams (director)
-    public function index()
+    public function index(Request $request)
     {
         $this->authorizeRole('directeur_pedagogique');
 
-        $exams = Exam::with(['module', 'group', 'rooms'])->get();
-        return view('exams.index', compact('exams'));
+        $query = Exam::with(['module', 'group', 'rooms']);
+
+        if ($request->filled('module')) {
+            $query->where('module_id', $request->module);
+        }
+
+        if ($request->filled('group')) {
+            $query->where('group_id', $request->group);
+        }
+
+        $exams = $query->orderBy('start_time', 'desc')->paginate(10);
+
+        $modules = Module::all();
+        $groups = Group::all();
+
+        return view('exams.index', compact('exams', 'modules', 'groups'));
     }
 
-    // ✅ Show exam planning form
     public function create()
     {
         $this->authorizeRole('directeur_pedagogique');
@@ -38,7 +50,6 @@ class ExamController extends Controller
         return view('exams.create', compact('modules', 'groups', 'rooms'));
     }
 
-    // ✅ Store exam plan (fixed validation & relationship)
     public function store(Request $request)
     {
         $this->authorizeRole('directeur_pedagogique');
@@ -58,8 +69,7 @@ class ExamController extends Controller
         ]);
 
         $startTime = $request->date . ' ' . $request->time;
-        $durationInMinutes = $request->duration ?? 120;
-        $endTime = now()->parse($startTime)->addMinutes($durationInMinutes);
+        $endTime = now()->parse($startTime)->addMinutes($request->duration ?? 120);
 
         $exam = Exam::create([
             'module_id'     => $request->module_id,
@@ -73,23 +83,19 @@ class ExamController extends Controller
         ]);
 
         $exam->rooms()->sync($request->room_ids);
-        $exam->teachers()->sync($request->teacher_ids); // ✅ Assign teachers
-
+        $exam->teachers()->sync($request->teacher_ids);
 
         return redirect()->route('exams.index')->with('success', 'Examen planifié avec succès.');
     }
 
-
-    // ✅ Planning view (for students, teachers, and director)
     public function planning()
     {
         $user = Auth::user();
 
         if ($user->isEtudiant()) {
             $exams = Exam::where('group_id', $user->group_id)
-            ->with('module.program', 'rooms') // 👈 Add 'module.program'
-            ->get();
-        
+                ->with('module.program', 'rooms')
+                ->get();
         } elseif ($user->isEnseignant()) {
             $moduleIds = $user->modules->pluck('id');
             $exams = Exam::whereIn('module_id', $moduleIds)
@@ -104,38 +110,40 @@ class ExamController extends Controller
         return view('exams.schedule', compact('exams'));
     }
 
-    // ✅ For teachers
     public function schedule()
     {
         $user = auth()->user();
-    
+
         $exams = Exam::whereHas('teachers', function ($query) use ($user) {
                 $query->where('users.id', $user->id);
             })
             ->with(['module', 'group', 'rooms'])
             ->orderBy('start_time')
             ->get();
-    
+
         return view('exams.schedule', compact('exams'));
     }
-    
 
-    // ✅ Show exam results for Directeur Pédagogique
-    public function results()
+    public function results(Request $request)
     {
         $this->authorizeRole('directeur_pedagogique');
 
-        $exams = Exam::with(['module', 'group', 'results.student'])->get();
+        $query = Exam::with(['module', 'group', 'results.student']);
 
-        return view('exams.results', compact('exams'));
-    }
-
-    // ✅ Role check helper
-    protected function authorizeRole($role)
-    {
-        if (Auth::user()->user_type !== $role) {
-            abort(403);
+        if ($request->filled('module')) {
+            $query->where('module_id', $request->module);
         }
+
+        if ($request->filled('group')) {
+            $query->where('group_id', $request->group);
+        }
+
+        $exams = $query->orderBy('start_time', 'desc')->paginate(10);
+
+        $modules = Module::all();
+        $groups = Group::all();
+
+        return view('exams.results', compact('exams', 'modules', 'groups'));
     }
 
     public function edit($id)
@@ -171,8 +179,7 @@ class ExamController extends Controller
         $exam = Exam::findOrFail($id);
 
         $startTime = $request->date . ' ' . $request->time;
-        $durationInMinutes = 120;
-        $endTime = now()->parse($startTime)->addMinutes($durationInMinutes);
+        $endTime = now()->parse($startTime)->addMinutes(120);
 
         $exam->update([
             'module_id'     => $request->module_id,
@@ -187,5 +194,12 @@ class ExamController extends Controller
         $exam->teachers()->sync($request->teacher_ids);
 
         return redirect()->route('exams.index')->with('success', 'Examen mis à jour avec succès.');
+    }
+
+    protected function authorizeRole($role)
+    {
+        if (Auth::user()->user_type !== $role) {
+            abort(403);
+        }
     }
 }

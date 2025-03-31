@@ -21,8 +21,8 @@
                 <tr class="border-b">
                     <td class="p-2">{{ $exam->module->name }}</td>
                     <td class="p-2">{{ $exam->group->name }}</td>
-                    <td class="p-2">{{ $exam->date }}</td>
-                    <td class="p-2">{{ $exam->time }}</td>
+                    <td class="p-2">{{ \Carbon\Carbon::parse($exam->start_time)->format('d/m/Y') }}</td>
+                    <td class="p-2">{{ \Carbon\Carbon::parse($exam->start_time)->format('H:i') }}</td>
                 </tr>
                 @endforeach
             </tbody>

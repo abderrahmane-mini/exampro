@@ -2,7 +2,6 @@
 
 @section('content')
 <x-page-title title="PV des Notes" subtitle="Liste des PV disponibles" />
-
 <x-alert />
 
 <x-section>
@@ -22,9 +21,12 @@
                         <td class="p-2">{{ $exam->module->name }}</td>
                         <td class="p-2">{{ $exam->group->name }}</td>
                         <td class="p-2">{{ \Carbon\Carbon::parse($exam->start_time)->format('d/m/Y H:i') }}</td>
-                        <td class="p-2">
+                        <td class="p-2 space-x-2">
                             <a href="{{ route('documents.pv', $exam->id) }}" class="text-blue-600 hover:underline">
                                 Voir PV
+                            </a>
+                            <a href="{{ route('documents.pv.download', $exam->id) }}" class="text-green-600 hover:underline">
+                                Télécharger
                             </a>
                         </td>
                     </tr>

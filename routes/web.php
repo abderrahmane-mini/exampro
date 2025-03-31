@@ -43,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
 // 📄 Documents (Accessible by teachers & director)
 Route::middleware(['auth'])->group(function () {
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+    Route::get('/documents/pv/{examId}/download', [DocumentController::class, 'generatePV'])->name('documents.pv.download');
     Route::get('/documents/releve/{student}', [DocumentController::class, 'releve'])->name('documents.releve');
     Route::get('/documents/attestation/{student}', [DocumentController::class, 'attestation'])->name('documents.attestation');
     Route::get('/documents/pv/{exam}', [DocumentController::class, 'pv'])->name('documents.pv');
@@ -121,15 +122,15 @@ Route::middleware(['auth', 'role:administrateur'])->group(function () {
 
     Route::get('/users/manage', [AdministrateurController::class, 'manage'])->name('users.manage');
 
-    // ✅ Show user (required to fix the "GET method is not supported" error)
-    Route::get('/users/{user}', [AdministrateurController::class, 'show'])->name('users.show');
+    // ✅ FIX: Define static routes BEFORE dynamic ones
+    Route::get('/users/permissions', [AdministrateurController::class, 'permissions'])->name('users.permissions');
+    Route::patch('/users/{user}/permissions', [AdministrateurController::class, 'updatePermission'])->name('users.permissions.update');
 
+    // 🛑 This must come AFTER the "permissions" route
+    Route::get('/users/{user}', [AdministrateurController::class, 'show'])->name('users.show');
     Route::get('/users/{user}/edit', [AdministrateurController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [AdministrateurController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [AdministrateurController::class, 'destroy'])->name('users.delete');
-
-    Route::get('/users/permissions', [AdministrateurController::class, 'permissions'])->name('users.permissions');
-    Route::patch('/users/{user}/permissions', [AdministrateurController::class, 'updatePermission'])->name('users.permissions.update');
 });
 
 

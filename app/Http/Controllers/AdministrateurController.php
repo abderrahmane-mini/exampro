@@ -13,11 +13,7 @@ class AdministrateurController extends Controller
     {
         $this->middleware(['auth', 'role:administrateur']);
     }
-    public function show(User $user)
-    {
-        return view('administrateur.users.show', compact('user'));
-    }
-    
+
     public function dashboard()
     {
         $user = Auth::user();
@@ -26,12 +22,12 @@ class AdministrateurController extends Controller
         return view('administrateur.dashboard', [
             'user' => $user,
             'menu' => $menu,
-            'totalUsersCount'   => User::count(),
-            'adminCount'        => User::where('user_type', 'administrateur')->count(),
-            'directeurCount'    => User::where('user_type', 'directeur_pedagogique')->count(),
-            'enseignantCount'   => User::where('user_type', 'enseignant')->count(),
-            'etudiantCount'     => User::where('user_type', 'etudiant')->count(),
-            'recentUsers'       => User::latest()->take(5)->get(),
+            'totalUsersCount' => User::count(),
+            'adminCount' => User::where('user_type', 'administrateur')->count(),
+            'directeurCount' => User::where('user_type', 'directeur_pedagogique')->count(),
+            'enseignantCount' => User::where('user_type', 'enseignant')->count(),
+            'etudiantCount' => User::where('user_type', 'etudiant')->count(),
+            'recentUsers' => User::latest()->take(5)->get(),
         ]);
     }
 
@@ -50,15 +46,9 @@ class AdministrateurController extends Controller
                 'Comptes' => [
                     'icon' => 'fas fa-users',
                     'submenu' => [
-                        'Créer Compte' => [
-                            'route' => 'users.create'
-                        ],
-                        'Gérer Comptes' => [
-                            'route' => 'users.manage'
-                        ],
-                        'Permissions' => [
-                            'route' => 'users.permissions'
-                        ]
+                        'Créer Compte' => ['route' => 'users.create'],
+                        'Gérer Comptes' => ['route' => 'users.manage'],
+                        'Permissions' => ['route' => 'users.permissions']
                     ]
                 ]
             ]
@@ -73,17 +63,17 @@ class AdministrateurController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|string|email|max:255|unique:users',
-            'password'   => 'required|string|min:6|confirmed',
-            'user_type'  => 'required|in:administrateur,directeur_pedagogique,enseignant,etudiant',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+            'user_type' => 'required|in:administrateur,directeur_pedagogique,enseignant,etudiant',
         ]);
 
         User::create([
-            'name'       => $validated['name'],
-            'email'      => $validated['email'],
-            'password'   => Hash::make($validated['password']),
-            'user_type'  => $validated['user_type'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'user_type' => $validated['user_type'],
         ]);
 
         return redirect()->route('users.manage')->with('success', 'Utilisateur créé avec succès.');
@@ -97,9 +87,9 @@ class AdministrateurController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'user_type'  => 'required|in:administrateur,directeur_pedagogique,enseignant,etudiant',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'user_type' => 'required|in:administrateur,directeur_pedagogique,enseignant,etudiant',
         ]);
 
         $user->update($validated);
@@ -113,33 +103,77 @@ class AdministrateurController extends Controller
         return redirect()->route('users.manage')->with('success', 'Utilisateur supprimé.');
     }
 
-    public function manage()
+    public function manage(Request $request)
     {
-        $users = User::orderBy('created_at', 'desc')->get();
-        return view('administrateur.users.index', compact('users'));
+        $query = User::query();
+
+        if ($request->filled('role')) {
+            $query->where('user_type', $request->role);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                    ->orWhere('email', 'like', "%$search%");
+            });
+        }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        $menu = $this->getMenu();
+        $user = Auth::user();
+
+        return view('administrateur.users.index', compact('users', 'menu', 'user'));
     }
 
-    public function permissions()
+    public function permissions(Request $request)
     {
         $user = Auth::user();
-        $menu = $this->getMenu(); // <- this is important for the sidebar
-    
-        $users = User::all();
-    
+        $menu = $this->getMenu();
+
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $search = $request->query('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('user_type', $request->query('role'));
+        }
+
+        $sortColumn = $request->query('sort', 'name');
+        $sortDirection = $request->query('direction', 'asc');
+
+        if (in_array($sortColumn, ['name', 'email', 'user_type', 'created_at'])) {
+            $query->orderBy($sortColumn, $sortDirection);
+        }
+
+        $perPage = in_array($request->query('per_page'), [10, 25, 50, 100]) ? $request->query('per_page') : 10;
+
+        $users = $query->paginate($perPage);
+
         return view('administrateur.users.permissions', compact('users', 'menu', 'user'));
     }
-    
-    
+
     public function updatePermission(Request $request, User $user)
     {
         $request->validate([
             'user_type' => 'required|in:administrateur,directeur_pedagogique,enseignant,etudiant',
         ]);
-    
+
         $user->user_type = $request->user_type;
         $user->save();
-    
+
         return redirect()->route('users.permissions')->with('success', 'Rôle mis à jour avec succès.');
     }
-    
+
+    public function show(User $user)
+    {
+        return view('administrateur.users.show', compact('user'));
+    }
 }
