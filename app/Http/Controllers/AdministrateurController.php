@@ -83,19 +83,31 @@ class AdministrateurController extends Controller
     {
         return view('administrateur.users.edit', compact('user'));
     }
-
+    
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'user_type' => 'required|in:administrateur,directeur_pedagogique,enseignant,etudiant',
+            'password'  => 'nullable|string|min:6|confirmed',
         ]);
-
-        $user->update($validated);
-
-        return redirect()->route('users.manage')->with('success', 'Utilisateur mis à jour.');
+    
+        // Mise à jour des informations principales
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->user_type = $validated['user_type'];
+    
+        // Mise à jour du mot de passe uniquement s’il est rempli
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+    
+        $user->save();
+    
+        return redirect()->route('users.manage')->with('success', 'Utilisateur mis à jour avec succès.');
     }
+    
 
     public function destroy(User $user)
     {

@@ -2,13 +2,12 @@
 
 @section('content')
 <x-page-title title="Modifier l'utilisateur" subtitle="Mettez à jour les informations du compte" />
-
 <x-alert />
 
 <x-section>
     <form action="{{ route('users.update', $user->id) }}" method="POST" class="space-y-6">
         @csrf
-        @method('PATCH')
+        @method('PUT') {{-- ✅ FIXED METHOD --}}
 
         {{-- Nom --}}
         <div>
@@ -35,6 +34,19 @@
                 @endforeach
             </select>
             <x-input-error :messages="$errors->get('user_type')" class="mt-1" />
+        </div>
+
+        {{-- Nouveau mot de passe (optionnel) --}}
+        <div>
+            <x-input-label for="password" value="Nouveau mot de passe (optionnel)" />
+            <x-text-input id="password" name="password" type="password" class="w-full mt-1" autocomplete="new-password" />
+            <x-input-error :messages="$errors->get('password')" class="mt-1" />
+        </div>
+
+        {{-- Confirmation du mot de passe --}}
+        <div>
+            <x-input-label for="password_confirmation" value="Confirmer le mot de passe" />
+            <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="w-full mt-1" />
         </div>
 
         <div class="pt-4">

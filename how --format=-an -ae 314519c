@@ -1,0 +1,19 @@
+[33m314519c[m Add initial project structure with configuration files, controllers, and components
+[33mcace60d[m Refactor database migrations: remove obsolete modules and programs tables, and add new groups, exam rooms, and documents tables
+[33m20445ba[m Add controllers and models for Room, Group, Module, Program, Student, Teacher, Document, and Exam with initial relationships
+[33m5298a0d[m `Added various controllers and models for managing users, groups, modules, exams, grades, and documents, including role-based authorization and PDF generation.`
+[33mb8c625c[m Add views for managing exam rooms: create, edit, index, and exams list
+[33m640a03b[m `Added exam planning feature with create, index, and planning views`
+[33mf450a52[m Add views for entering, viewing, and averaging grades, including exam selection
+[33m9d57b0d[m Add views for generating student documents: attestation, procès-verbal, and relevé de notes
+[33m9f8a983[m Add Blade components for alerts, confirmation modals, empty states, page titles, and sections
+[33m0e6dc62[m Add role-based middleware and update user and module relationships; refactor exam scheduling logic
+[33m90342d9[m Add seeders for Room, Module, Group, and Program; update exam scheduling and grade entry views
+[33m125ac1c[m Refactor routes for directeur_pedagogique to use resource controllers; add exams route for rooms
+[33m5f2cd5a[m Enhance UI and functionality for student documents and exam results; update icons and styles in controllers and views
+[33md144d79[m Update Exam and Module models; enhance exam view and add module assignment functionality
+[33m912f311[m Add migration for exam_teacher table and create user profile, exam edit, grade edit, navbar, and module show views
+[33m2f6d5f8[m Refactor profile and authentication views; enhance UI elements and improve user experience
+[33m8edacc4[m Refactor Document model; update fillable fields and enhance group seeding logic for dynamic group creation
+[33m5c8e0c9[m Enhance document views with filtering options and pagination; update UI elements for better user experience
+[33mb579008[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Remove outdated exam logo image and update existing logo for consistency
