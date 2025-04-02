@@ -90,6 +90,8 @@
         <div class="text-sm text-gray-600">
             Affichage de {{ $users->firstItem() ?? 0 }} à {{ $users->lastItem() ?? 0 }} sur {{ $users->total() }} utilisateurs
         </div>
+
+        
         
         <div class="pagination-links">
             {{ $users->appends(request()->except('page'))->links() }}

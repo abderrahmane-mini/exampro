@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Exam, ExamResult, Document, User};
+use App\Models\{Exam, ExamResult, Document, User, Module, Group};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -15,18 +15,32 @@ class DocumentController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        $query = Exam::with('module', 'group');
+
+        if ($user->isDirecteurPedagogique()) {
+            if ($request->filled('module_id')) {
+                $query->where('module_id', $request->module_id);
+            }
+            if ($request->filled('group_id')) {
+                $query->where('group_id', $request->group_id);
+            }
+            if ($request->filled('semester')) {
+                $query->where('semester', $request->semester);
+            }
+
+            $exams = $query->orderBy('start_time', 'desc')->paginate(10);
+            $modules = Module::all();
+            $groups = Group::all();
+
+            return view('documents.index', compact('exams', 'modules', 'groups'));
+        }
 
         if ($user->isEnseignant()) {
             $moduleIds = $user->modules->pluck('id');
-            $exams = Exam::whereIn('module_id', $moduleIds)->with('module', 'group')->get();
-            return view('documents.index', compact('exams'));
-        }
-
-        if ($user->isDirecteurPedagogique()) {
-            $exams = Exam::with('module', 'group')->get();
+            $exams = $query->whereIn('module_id', $moduleIds)->paginate(10);
             return view('documents.index', compact('exams'));
         }
 
@@ -39,7 +53,6 @@ class DocumentController extends Controller
         $average = $grades->avg('grade');
 
         $pdf = Pdf::loadView('documents.releve', compact('student', 'grades', 'average'));
-
         $filename = 'releve_notes_' . $student->id . '_' . now()->timestamp . '.pdf';
         $filePath = 'documents/releves/' . $filename;
         Storage::disk('public')->put($filePath, $pdf->output());
@@ -57,11 +70,7 @@ class DocumentController extends Controller
     public function downloadReleve()
     {
         $student = Auth::user();
-
-        if (!$student->isEtudiant()) {
-            abort(403);
-        }
-
+        if (!$student->isEtudiant()) abort(403);
         return $this->releve($student);
     }
 
@@ -74,10 +83,9 @@ class DocumentController extends Controller
     public function generatePV($examId)
     {
         $this->authorizeRole('directeur_pedagogique');
-
         $exam = Exam::with(['module', 'group', 'results.student'])->findOrFail($examId);
-        $pdf = Pdf::loadView('documents.pv', compact('exam'));
 
+        $pdf = Pdf::loadView('documents.pv', compact('exam'));
         $filename = 'pv_notes_module_' . $exam->module->code . '_' . now()->timestamp . '.pdf';
         $filePath = 'documents/pv/' . $filename;
         Storage::disk('public')->put($filePath, $pdf->output());
@@ -96,16 +104,11 @@ class DocumentController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->isEtudiant()) {
-            $student = $user;
-        } elseif ($user->isDirecteurPedagogique()) {
-            if (!$studentId) {
-                abort(400, 'Identifiant étudiant requis.');
-            }
-            $student = User::where('user_type', 'etudiant')->findOrFail($studentId);
-        } else {
-            abort(403);
-        }
+        $student = $user->isEtudiant()
+            ? $user
+            : ($user->isDirecteurPedagogique()
+                ? User::where('user_type', 'etudiant')->findOrFail($studentId)
+                : abort(403));
 
         $average = ExamResult::where('student_id', $student->id)->avg('grade') ?? 0;
 
@@ -117,7 +120,6 @@ class DocumentController extends Controller
 
         $filename = 'attestation_' . str_replace(' ', '_', strtolower($student->name)) . '_' . now()->timestamp . '.pdf';
         $filePath = 'documents/attestations/' . $filename;
-
         Storage::disk('public')->put($filePath, $pdf->output());
 
         Document::create([
@@ -130,24 +132,34 @@ class DocumentController extends Controller
         return response()->download(storage_path('app/public/' . $filePath));
     }
 
-    public function attestations()
+    public function attestations(Request $request)
     {
         $this->authorizeRole('directeur_pedagogique');
-        $students = User::where('user_type', 'etudiant')->with('group')->get();
-        return view('documents.attestations', compact('students'));
+
+        $query = User::where('user_type', 'etudiant')->with('group');
+
+        if ($request->filled('group_id')) {
+            $query->where('group_id', $request->group_id);
+        }
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $students = $query->orderBy('name')->paginate(10);
+        $groups = Group::all();
+
+        return view('documents.attestations', compact('students', 'groups'));
     }
 
     public function showAttestation($studentId = null)
     {
         $user = Auth::user();
-
-        if ($user->isEtudiant()) {
-            $student = $user;
-        } elseif ($user->isDirecteurPedagogique()) {
-            $student = User::where('user_type', 'etudiant')->findOrFail($studentId);
-        } else {
-            abort(403);
-        }
+        $student = $user->isEtudiant()
+            ? $user
+            : ($user->isDirecteurPedagogique()
+                ? User::where('user_type', 'etudiant')->findOrFail($studentId)
+                : abort(403));
 
         $average = ExamResult::where('student_id', $student->id)->avg('grade');
         return view('documents.attestation', compact('student', 'average'));

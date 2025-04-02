@@ -61,6 +61,9 @@
         <div class="mt-6">
             {{ $users->links() }}
         </div>
+
+
+        
     @else
         <x-empty-state message="Aucun utilisateur trouvé." />
     @endif
