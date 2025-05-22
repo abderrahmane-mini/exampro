@@ -28,11 +28,6 @@
             background-color: #0d6efd;
             border-color: #0d6efd;
         }
-        .btn-register {
-            background-color: #f8f9fa;
-            border-color: #dee2e6;
-            color: #212529;
-        }
     </style>
 </head>
 <body>
@@ -70,19 +65,12 @@
                         </div>
                     @endauth
 
-                    <!-- Login / Register -->
+                    <!-- Login -->
                     <div class="d-grid gap-3 mb-4">
                         <a href="{{ route('login') }}" class="btn btn-login btn-lg">
                             <i class="fas fa-sign-in-alt me-2"></i>
                             Se connecter
                         </a>
-
-                        @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="btn btn-register btn-lg">
-                            <i class="fas fa-user-plus me-2"></i>
-                            S'inscrire
-                        </a>
-                        @endif
                     </div>
 
                     <!-- Forgot Password -->
